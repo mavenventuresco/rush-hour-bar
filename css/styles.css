@@ -13,7 +13,8 @@ html, body {
 }
 canvas {
   display: block;
-  width: 100%; height: 100%;
+  /* size is set via style attr in JS — do NOT override with CSS width/height */
+  image-rendering: auto;
 }
 
 /* ─── HUD ────────────────────────────────────────────────────────────────── */

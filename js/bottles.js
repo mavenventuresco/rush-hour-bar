@@ -62,67 +62,72 @@ function drawBottle(ctx, x, y, style, label, scale = 1) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);
+  // Anti-alias within scaled context
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   const s = style;
 
   if (s.shape === 'can') {
     // Can body
-    _rr(ctx, -13, -30, 26, 56, 5, s.body, s.dark, 1.5);
-    // Top rim
-    _rr(ctx, -11, -30, 22, 7, 3, s.top || '#aaa', null);
+    _rr(ctx, -14, -32, 28, 60, 6, s.body, s.dark, 2);
+    // Top rim — rounded tab
+    _rr(ctx, -12, -32, 24, 8, 4, s.top || '#aaa', null);
     // Label band
-    _rr(ctx, -12, -12, 24, 22, 2, s.label || s.body, null);
-    // Brand text
+    _rr(ctx, -13, -13, 26, 24, 3, s.label || s.body, null);
+    // Brand text — larger, sharper
     ctx.fillStyle = _contrastText(s.label || s.body);
-    ctx.font = "bold 7px 'Fredoka', sans-serif";
+    ctx.font = "700 8px 'Fredoka', sans-serif";
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(s.text || label, 0, -1);
     // Shine strip
     ctx.save();
-    ctx.globalAlpha = 0.22;
+    ctx.globalAlpha = 0.2;
     ctx.fillStyle = '#fff';
-    ctx.fillRect(-11, -28, 7, 52);
+    ctx.beginPath();
+    ctx.roundRect(-12, -30, 7, 56, 3);
+    ctx.fill();
     ctx.restore();
   } else {
-    // Bottle body (wider, more polished shape)
+    // Bottle body — smooth bezier silhouette
     ctx.beginPath();
-    ctx.moveTo(-11, 26);
-    ctx.bezierCurveTo(-13, 20, -13, 10, -10, 0);
-    ctx.lineTo(-8, -14);
-    ctx.lineTo(-5, -28);
-    ctx.lineTo(5, -28);
-    ctx.lineTo(8, -14);
-    ctx.lineTo(10, 0);
-    ctx.bezierCurveTo(13, 10, 13, 20, 11, 26);
+    ctx.moveTo(-11, 28);
+    ctx.bezierCurveTo(-14, 22, -14, 12, -11, 2);
+    ctx.lineTo(-9, -12);
+    ctx.lineTo(-6, -28);
+    ctx.lineTo(6, -28);
+    ctx.lineTo(9, -12);
+    ctx.lineTo(11, 2);
+    ctx.bezierCurveTo(14, 12, 14, 22, 11, 28);
     ctx.closePath();
     ctx.fillStyle = s.body;
     ctx.fill();
     ctx.strokeStyle = s.dark;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     // Cap / cork
-    _rr(ctx, -5, -34, 10, 8, 3, s.cap || '#777', s.dark || '#555', 1);
+    _rr(ctx, -6, -36, 12, 10, 4, s.cap || '#777', s.dark || '#555', 1.5);
 
-    // Label panel
-    _rr(ctx, -9, -5, 18, 20, 3, s.label || '#fff8', null);
+    // Label panel with subtle border
+    _rr(ctx, -10, -4, 20, 22, 4, s.label || '#fff8', (s.dark || '#aaa') + '66', 1);
 
-    // Label text
+    // Label text — larger for legibility
     ctx.fillStyle = s.labelText || '#333';
-    ctx.font = "bold 7px 'Fredoka', sans-serif";
+    ctx.font = "700 8px 'Fredoka', sans-serif";
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(s.text || label, 0, 5);
+    ctx.fillText(s.text || label, 0, 7);
 
     // Shine strip
     ctx.save();
-    ctx.globalAlpha = 0.2;
+    ctx.globalAlpha = 0.22;
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.moveTo(-9, -4);
-    ctx.lineTo(-7, -26);
-    ctx.lineTo(-4, -26);
-    ctx.lineTo(-6, -4);
+    ctx.moveTo(-10, -2);
+    ctx.lineTo(-8, -26);
+    ctx.lineTo(-5, -26);
+    ctx.lineTo(-7, -2);
     ctx.closePath();
     ctx.fill();
     ctx.restore();

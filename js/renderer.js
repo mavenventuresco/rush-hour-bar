@@ -9,9 +9,10 @@ function rr(x, y, w, h, r, fill, stroke, lw = 1.5) {
 }
 
 function txt(str, x, y, color, size = 12, align = 'center', weight = '600') {
-  X.font = `${weight} ${size}px 'Fredoka', sans-serif`;
+  // Round x/y to nearest 0.5 to hit sub-pixel boundary cleanly
+  X.font = `${weight} ${Math.round(size)}px 'Fredoka', sans-serif`;
   X.fillStyle = color; X.textAlign = align; X.textBaseline = 'middle';
-  X.fillText(str, x, y);
+  X.fillText(str, Math.round(x * 2) / 2, Math.round(y * 2) / 2);
 }
 
 // ─── GLASS SHAPES ────────────────────────────────────────────────────────────
@@ -32,10 +33,12 @@ function liquidColor(ings) {
 
 function drawGlassShape(x, y, type, ings, finished, sc = 1) {
   X.save(); X.translate(x, y); X.scale(sc, sc);
-  const stroke = finished ? '#f5c842' : '#a090d0';
-  const lw     = finished ? 2.5 : 2;
+  // Thicker strokes stay crisp at any DPR — lineWidth is in logical pixels
+  // so divide by sc so strokes don't fatten when sc < 1
+  const stroke = finished ? '#f5c842' : '#c0b0e0';
+  const lw     = finished ? 2.5 : Math.max(1.5, 2 / sc);
   X.strokeStyle = stroke; X.lineWidth = lw;
-  if (finished) { X.shadowBlur = 16; X.shadowColor = '#f5c84466'; }
+  if (finished) { X.shadowBlur = 18; X.shadowColor = '#f5c84466'; }
 
   const liq = liquidColor(ings);
   const hasIce = ings.includes('ice');
@@ -201,7 +204,13 @@ function drawPerson(x, y, skin, cloth, hair, face, scale = 1) {
 // ─── MAIN DRAW ───────────────────────────────────────────────────────────────
 function draw(G, frame, curTab, dragging, particles, floats) {
   const L = lo();
-  X.clearRect(0, 0, W, H);
+  // clearRect resets the transform — restore DPR scale immediately after
+  X.setTransform(1, 0, 0, 1, 0, 0);
+  X.clearRect(0, 0, cv.width, cv.height);
+  X.setTransform(DPR, 0, 0, DPR, 0, 0);
+  // Crisp sub-pixel rendering
+  X.imageSmoothingEnabled = true;
+  X.imageSmoothingQuality = 'high';
 
   // ── Background gradient ──
   const bg = X.createLinearGradient(0, L.rackY, 0, H);

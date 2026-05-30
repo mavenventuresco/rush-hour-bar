@@ -1,9 +1,21 @@
 // ─── CANVAS SETUP ────────────────────────────────────────────────────────────
 const cv = document.getElementById('c');
 const X  = cv.getContext('2d');
-let W, H;
-function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
-resize(); window.onresize = resize;
+let W, H, DPR;
+
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W   = window.innerWidth;
+  H   = window.innerHeight;
+  cv.width        = Math.round(W * DPR);
+  cv.height       = Math.round(H * DPR);
+  cv.style.width  = W + 'px';
+  cv.style.height = H + 'px';
+  // Scale all drawing commands by DPR so coordinates stay in CSS pixels
+  X.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+resize();
+window.onresize = resize;
 
 // ─── LAYOUT ──────────────────────────────────────────────────────────────────
 function lo() {

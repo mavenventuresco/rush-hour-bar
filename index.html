@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rush Hour Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hlogo">🍸 RUSH HOUR BAR</div>
+  <div class="stat">💰 <b id="sv">$0</b></div>
+  <div class="stat">⭐ <b id="scv">0</b></div>
+  <div class="stat">🔥<span class="cbadge" id="combo">x2</span></div>
+  <div class="stat">Served: <b id="srvd">0</b></div>
+  <button id="mutebtn" onclick="toggleMute()">🔊</button>
+  <button onclick="openMenu()">📋 Menu</button>
+  <button onclick="saveGame()">💾 Save</button>
+</div>
+
+<!-- Cocktail menu modal -->
+<div class="modal" id="mmodal" onclick="closeMenu()">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <h3>📋 Cocktail Menu</h3>
+    <div class="mgrid" id="mgrid"></div>
+    <button class="cbtn" onclick="closeMenu()">Close</button>
+  </div>
+</div>
+
+<!-- Start screen -->
+<div id="overlay">
+  <h1>🍸 RUSH HOUR BAR</h1>
+  <div class="sub">UNLIMITED RUSH</div>
+  <div class="inst">
+    Customers sit at the bar with drink orders.<br>
+    Pick a <b style="color:#88ccff">glass</b> → add <b style="color:#ffbb66">ingredients</b> → <b style="color:#88ffaa">mix</b> if needed<br>
+    <b style="color:#f5c842">Drag the finished drink</b> to the customer!<br>
+    Chain correct drinks for combo bonuses 🔥
+  </div>
+  <button class="bbtn" onclick="startGame()" id="startbtn">▶ OPEN THE BAR</button>
+  <div id="loadinfo" style="font-size:11px;color:#6050a0;margin-top:12px"></div>
+</div>
+
+<!-- Flash notification -->
+<div id="flash"></div>
+
+<!-- Status log bar -->
+<div id="logbar">Welcome to Rush Hour Bar!</div>
+
+<!-- Game scripts — order matters -->
+<script src="js/drinks.js"></script>
+<script src="js/bottles.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/game.js"></script>
+
+</body>
+</html>

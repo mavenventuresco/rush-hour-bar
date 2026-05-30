@@ -1,0 +1,169 @@
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #1a0a2e;
+  font-family: 'Fredoka', sans-serif;
+}
+canvas {
+  display: block;
+  width: 100%; height: 100%;
+}
+
+/* ─── HUD ────────────────────────────────────────────────────────────────── */
+#hud {
+  position: fixed; top: 0; left: 0; right: 0; height: 40px;
+  background: linear-gradient(90deg, #120828, #1c1040);
+  border-bottom: 2px solid #2e1c58;
+  display: flex; align-items: center;
+  padding: 0 14px; gap: 14px;
+  z-index: 10;
+}
+.hlogo {
+  font-size: 15px;
+  color: #f5c842;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.stat { font-size: 12px; color: #8070aa; font-weight: 600; }
+.stat b { color: #d0b8ff; font-size: 14px; }
+.cbadge {
+  background: #2a1a50;
+  border: 1.5px solid #8060d0;
+  border-radius: 10px;
+  padding: 1px 9px;
+  font-size: 12px; color: #d0b0ff; font-weight: 600;
+  display: none;
+}
+.cbadge.on { display: inline; }
+#hud button {
+  margin-left: auto;
+  background: #1a1040;
+  border: 1.5px solid #5a3a90;
+  border-radius: 8px;
+  color: #b090e8;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 12px; cursor: pointer;
+  transition: background 0.15s;
+}
+#hud button:hover { background: #2a2060; }
+#hud button + button { margin-left: 0; }
+
+/* ─── OVERLAY / START SCREEN ─────────────────────────────────────────────── */
+#overlay {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: rgba(8, 2, 18, 0.95);
+  z-index: 100; text-align: center; padding: 20px;
+}
+#overlay h1 {
+  font-size: 40px; color: #f5c842;
+  letter-spacing: 3px; margin-bottom: 4px; font-weight: 700;
+  text-shadow: 0 0 24px #f5c84266;
+}
+#overlay .sub {
+  font-size: 14px; color: #b090e8;
+  margin-bottom: 22px; letter-spacing: 2px; font-weight: 400;
+}
+#overlay .inst {
+  font-size: 13px; color: #8070a0;
+  max-width: 420px; line-height: 2.2;
+  margin-bottom: 20px;
+}
+.bbtn {
+  background: linear-gradient(135deg, #7a3aee, #5a1ac0);
+  border: none; border-radius: 14px;
+  color: #fff;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 17px; font-weight: 600;
+  padding: 13px 40px; cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 24px #6a2aee66;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.bbtn:hover { transform: scale(1.06); box-shadow: 0 6px 30px #6a2aee88; }
+.bbtn:active { transform: scale(0.97); }
+
+/* ─── MODALS ─────────────────────────────────────────────────────────────── */
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(6, 2, 14, 0.94);
+  z-index: 80; display: none;
+  align-items: center; justify-content: center;
+  padding: 12px; overflow-y: auto;
+}
+.modal.open { display: flex; }
+.mbox {
+  background: #120828;
+  border: 2px solid #4a2880;
+  border-radius: 16px;
+  padding: 18px;
+  max-width: 600px; width: 100%;
+  max-height: 88vh; overflow-y: auto;
+}
+.mbox h3 { color: #f5c842; font-size: 17px; font-weight: 700; margin-bottom: 12px; text-align: center; }
+
+/* Recipe rows */
+.rrow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #1a1030;
+  font-size: 13px; font-weight: 600; color: #d0b8ff;
+}
+.rico { font-size: 18px; width: 26px; text-align: center; }
+
+/* Menu grid */
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 7px; margin-bottom: 12px; }
+.mc { background: #0c0620; border: 1.5px solid #201438; border-radius: 10px; padding: 8px 10px; }
+.mc .dn { font-size: 12px; color: #f5c842; font-weight: 600; margin-bottom: 3px; }
+.mc .mr { font-size: 10px; color: #7060a0; margin: 2px 0; font-weight: 400; }
+.tag { border-radius: 6px; padding: 1px 6px; font-size: 9px; font-weight: 600; }
+.tg  { background: #061808; color: #6af0a4; border: 1px solid #1a4a22; }
+.tl  { background: #180804; color: #f0b46a; border: 1px solid #4a2808; }
+.tm  { background: #040a18; color: #8ac4f0; border: 1px solid #103050; }
+.cbtn {
+  display: block; margin: 12px auto 0;
+  background: linear-gradient(135deg, #5a2a98, #3a1870);
+  border: none; border-radius: 9px;
+  color: #d0b8ff;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13px; font-weight: 600;
+  padding: 8px 24px; cursor: pointer;
+  transition: background 0.15s;
+}
+.cbtn:hover { background: linear-gradient(135deg, #6a3aa8, #4a2880); }
+
+/* ─── FLASH NOTIFICATION ─────────────────────────────────────────────────── */
+#flash {
+  position: fixed; top: 48px; left: 50%; transform: translateX(-50%);
+  background: #1a1040;
+  border: 2px solid #f5c842;
+  border-radius: 10px; padding: 6px 20px;
+  font-size: 14px; color: #f5c842; font-weight: 700;
+  opacity: 0; transition: opacity 0.25s;
+  pointer-events: none; z-index: 200;
+  white-space: nowrap;
+  box-shadow: 0 4px 18px #f5c84244;
+}
+#flash.show { opacity: 1; }
+
+/* ─── LOG BAR ────────────────────────────────────────────────────────────── */
+#logbar {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 22px;
+  background: rgba(6, 2, 14, 0.96);
+  border-top: 1px solid #1a1030;
+  padding: 2px 16px;
+  font-size: 11px; color: #6050a0; font-weight: 400;
+  pointer-events: none; z-index: 10; line-height: 18px;
+}
+#logbar.g { color: #5ddd88; }
+#logbar.b { color: #ee6060; }
+#logbar.t { color: #f5c842; }

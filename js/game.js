@@ -71,7 +71,7 @@ function startGame() {
     stools: new Array(SEATS).fill(null),
     queue: [],
     glass: null, ings: [], mixed: false, finished: false,
-    spawnTimer: 0, spawnInterval: 180,
+    spawnTimer: 0, spawnInterval: Math.round(120 + Math.random() * 120),
   };
   window._gameRunning = true;
 
@@ -100,6 +100,12 @@ try {
 } catch (e) {}
 
 // ─── CUSTOMER LOGIC ──────────────────────────────────────────────────────────
+function _nextSpawnDelay() {
+  // Base interval shrinks as the bar gets busier, with ±40% jitter
+  const base = Math.max(60, 180 - G.served * 2);
+  return Math.round(base * (0.6 + Math.random() * 0.8));
+}
+
 function spawnCustomer() {
   const pool = G.served < 5  ? DRINKS.filter(d => !d.mix && d.steps.length <= 2)
              : G.served < 15 ? DRINKS.filter(d => d.steps.length <= 3)
@@ -115,22 +121,34 @@ function spawnCustomer() {
 }
 
 function updateCustomers() {
-  // Spawn into queue
+  // Spawn into queue with randomised interval
   G.spawnTimer++;
   if (G.spawnTimer >= G.spawnInterval) {
     G.spawnTimer = 0;
-    G.spawnInterval = Math.max(60, 180 - G.served * 2);
+    G.spawnInterval = _nextSpawnDelay();
     if (G.queue.length < 4) G.queue.push(spawnCustomer());
   }
 
-  // Seat queued customers
-  if (G.queue.length > 0) {
-    const empty = G.stools.findIndex(s => s === null);
-    if (empty !== -1) {
-      const c = G.queue.shift();
-      c.state = 'ordering';
-      G.stools[empty] = c;
-      bellChime();
+  // Seat queued customers — random empty seat, with a chance the customer
+  // skips this tick and waits (simulates browsing for a preferred spot)
+  if (G.queue.length > 0 && Math.random() < 0.35) {
+    const emptySeats = G.stools
+      .map((s, i) => s === null ? i : -1)
+      .filter(i => i !== -1);
+
+    if (emptySeats.length > 0) {
+      // 25% chance: leave one random empty seat deliberately unfilled
+      const available = emptySeats.length > 1 && Math.random() < 0.25
+        ? emptySeats.filter((_, i) => i !== Math.floor(Math.random() * emptySeats.length))
+        : emptySeats;
+
+      if (available.length > 0) {
+        const seat = available[Math.floor(Math.random() * available.length)];
+        const c = G.queue.shift();
+        c.state = 'ordering';
+        G.stools[seat] = c;
+        bellChime();
+      }
     }
   }
 

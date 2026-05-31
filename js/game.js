@@ -72,6 +72,7 @@ function startGame() {
     queue: [],
     glass: null, ings: [], mixed: false, finished: false,
     spawnTimer: 0, spawnInterval: Math.round(120 + Math.random() * 120),
+    burstTarget: 3 + Math.floor(Math.random() * 3), burstUsed: 0,
   };
   window._gameRunning = true;
 
@@ -120,6 +121,11 @@ function spawnCustomer() {
   };
 }
 
+function _newBurstTarget() {
+  // Pick how many seats fill up this wave: 3, 4, or 5
+  return 3 + Math.floor(Math.random() * 3);
+}
+
 function updateCustomers() {
   // Spawn into queue with randomised interval
   G.spawnTimer++;
@@ -129,26 +135,28 @@ function updateCustomers() {
     if (G.queue.length < 4) G.queue.push(spawnCustomer());
   }
 
-  // Seat queued customers — random empty seat, with a chance the customer
-  // skips this tick and waits (simulates browsing for a preferred spot)
-  if (G.queue.length > 0 && Math.random() < 0.35) {
+  const occupied = G.stools.filter(s => s !== null).length;
+
+  // When the bar drains low, roll a fresh burst size for the next wave
+  if (occupied <= 1 && G.burstTarget === G.burstUsed) {
+    G.burstTarget = _newBurstTarget();
+    G.burstUsed   = 0;
+  }
+
+  // Only seat if we haven't hit this burst's cap yet
+  const burstSlotsFree = G.burstTarget - occupied;
+  if (G.queue.length > 0 && burstSlotsFree > 0 && Math.random() < 0.35) {
     const emptySeats = G.stools
       .map((s, i) => s === null ? i : -1)
       .filter(i => i !== -1);
 
     if (emptySeats.length > 0) {
-      // 25% chance: leave one random empty seat deliberately unfilled
-      const available = emptySeats.length > 1 && Math.random() < 0.25
-        ? emptySeats.filter((_, i) => i !== Math.floor(Math.random() * emptySeats.length))
-        : emptySeats;
-
-      if (available.length > 0) {
-        const seat = available[Math.floor(Math.random() * available.length)];
-        const c = G.queue.shift();
-        c.state = 'ordering';
-        G.stools[seat] = c;
-        bellChime();
-      }
+      const seat = emptySeats[Math.floor(Math.random() * emptySeats.length)];
+      const c = G.queue.shift();
+      c.state = 'ordering';
+      G.stools[seat] = c;
+      G.burstUsed++;
+      bellChime();
     }
   }
 

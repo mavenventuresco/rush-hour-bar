@@ -217,14 +217,19 @@ function buildRegions() {
   for (let i = 0; i < 6; i++) {
     regions.push({ id: 'glass' + i, x: rackStartX + i * rackIW, y: L.rackY, w: rackIW, h: L.rackH, type: 'glass', idx: i });
   }
-  regions.push({ id: 'tap_light', x: 6,  y: L.wsY, w: 44, h: L.wsH, type: 'tap', tap: 'light' });
-  regions.push({ id: 'tap_dark',  x: 50, y: L.wsY, w: 44, h: L.wsH, type: 'tap', tap: 'dark'  });
-  regions.push({ id: 'ice',       x: 98, y: L.wsY, w: 56, h: L.wsH, type: 'ice' });
-  const mxW = Math.max(130, W - 340);
-  regions.push({ id: 'mixstation', x: 158, y: L.wsY, w: mxW, h: L.wsH, type: 'mixstation' });
-  regions.push({ id: 'mixbtn', x: 158 + mxW / 2 - 30, y: L.wsY + L.wsH - 22, w: 60, h: 16, type: 'mixbtn' });
-  regions.push({ id: 'sink', x: 158 + mxW + 4, y: L.wsY, w: 92, h: L.wsH, type: 'sink' });
-  regions.push({ id: 'jig',  x: 158 + mxW + 100, y: L.wsY, w: W - 158 - mxW - 104, h: L.wsH, type: 'jig' });
+  // Workstation regions — derived from the same wsLayout() used by the renderer
+  const ws = wsLayout();
+  const tapSec  = ws[0], iceSec = ws[1], mxSec = ws[2], skSec = ws[3], jgSec = ws[4];
+  const t1x = tapSec.x + tapSec.w * 0.3;
+  const t2x = tapSec.x + tapSec.w * 0.72;
+  regions.push({ id: 'tap_light', x: t1x - 18, y: L.wsY, w: 36, h: L.wsH, type: 'tap', tap: 'light' });
+  regions.push({ id: 'tap_dark',  x: t2x - 18, y: L.wsY, w: 36, h: L.wsH, type: 'tap', tap: 'dark'  });
+  regions.push({ id: 'ice',        x: iceSec.x, y: L.wsY, w: iceSec.w, h: L.wsH, type: 'ice' });
+  regions.push({ id: 'mixstation', x: mxSec.x,  y: L.wsY, w: mxSec.w,  h: L.wsH, type: 'mixstation' });
+  const mxCx = mxSec.x + mxSec.w / 2;
+  regions.push({ id: 'mixbtn', x: mxCx - 30, y: L.wsY + L.wsH - 22, w: 60, h: 16, type: 'mixbtn' });
+  regions.push({ id: 'sink',       x: skSec.x,  y: L.wsY, w: skSec.w,  h: L.wsH, type: 'sink' });
+  regions.push({ id: 'jig',        x: jgSec.x,  y: L.wsY, w: jgSec.w,  h: L.wsH, type: 'jig'  });
   const tabs = Object.keys(SHELVES); const tabW = W / tabs.length;
   tabs.forEach((k, i) => regions.push({ id: 'tab_' + k, x: i * tabW, y: L.tabY, w: tabW, h: L.tabH, type: 'shelftab', key: k }));
 

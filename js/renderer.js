@@ -386,60 +386,128 @@ function _drawBar(L, G, frame, dragging) {
   });
 }
 
+// ─── COCKTAIL SHAKER (drawn, not emoji) ──────────────────────────────────────
+function _drawShaker(cx, cy) {
+  X.save(); X.translate(cx, cy);
+
+  // Main body — slightly tapered tin
+  X.beginPath();
+  X.moveTo(-11, 18);
+  X.lineTo(-12, -4);
+  X.lineTo(-8, -13);
+  X.lineTo(-8, -20);
+  X.lineTo(8, -20);
+  X.lineTo(8, -13);
+  X.lineTo(12, -4);
+  X.lineTo(11, 18);
+  X.closePath();
+  const bodyG = X.createLinearGradient(-12, 0, 12, 0);
+  bodyG.addColorStop(0,   '#a0a8c0');
+  bodyG.addColorStop(0.3, '#dce0f0');
+  bodyG.addColorStop(0.7, '#c0c8dc');
+  bodyG.addColorStop(1,   '#8890a8');
+  X.fillStyle = bodyG; X.fill();
+  X.strokeStyle = '#6870a0'; X.lineWidth = 1.8; X.stroke();
+
+  // Strainer cap
+  X.beginPath(); X.roundRect(-8, -28, 16, 10, 3);
+  const capG = X.createLinearGradient(-8, 0, 8, 0);
+  capG.addColorStop(0, '#b0b8d0'); capG.addColorStop(0.5, '#e0e4f4'); capG.addColorStop(1, '#9098b8');
+  X.fillStyle = capG; X.fill();
+  X.strokeStyle = '#6870a0'; X.lineWidth = 1.5; X.stroke();
+
+  // Lid
+  X.beginPath(); X.roundRect(-5, -34, 10, 8, 3);
+  X.fillStyle = '#d0d8f0'; X.fill();
+  X.strokeStyle = '#8088b0'; X.lineWidth = 1.2; X.stroke();
+
+  // Shine strip on body
+  X.save(); X.globalAlpha = 0.35; X.fillStyle = '#fff';
+  X.beginPath(); X.moveTo(-10, 16); X.lineTo(-11, -3); X.lineTo(-7, -3); X.lineTo(-6, 16); X.closePath(); X.fill();
+  X.restore();
+
+  // Shine on cap
+  X.save(); X.globalAlpha = 0.3; X.fillStyle = '#fff';
+  X.fillRect(-7, -27, 4, 8);
+  X.restore();
+
+  X.restore();
+}
+
+// ─── SHARED WORKSTATION GEOMETRY ─────────────────────────────────────────────
+// Returns section rects so renderer and input handler use identical positions.
+function wsLayout() {
+  const TAP_W = 92, ICE_W = 58, MX_W = Math.min(220, Math.max(160, W * 0.2));
+  const SINK_W = 90, JIG_W = 78, GAP = 5;
+  const totalW = TAP_W + ICE_W + MX_W + SINK_W + JIG_W + GAP * 4;
+  const ox = Math.round((W - totalW) / 2); // left edge of the whole station
+
+  const tapX  = ox;
+  const iceX  = ox + TAP_W + GAP;
+  const mxX   = ox + TAP_W + ICE_W + GAP * 2;
+  const skX   = ox + TAP_W + ICE_W + MX_W + GAP * 3;
+  const jgX   = ox + TAP_W + ICE_W + MX_W + SINK_W + GAP * 4;
+
+  return [
+    { id: 'taps', x: tapX, w: TAP_W, label: 'TAPS'          },
+    { id: 'ice',  x: iceX, w: ICE_W, label: 'ICE'           },
+    { id: 'mix',  x: mxX,  w: MX_W,  label: 'MIXING STATION'},
+    { id: 'sink', x: skX,  w: SINK_W, label: 'SINK'          },
+    { id: 'jig',  x: jgX,  w: JIG_W,  label: 'SHAKE'         },
+  ];
+}
+
 // ─── WORKSTATION ─────────────────────────────────────────────────────────────
 function _drawWorkstation(L, G, frame) {
+  // Full-width dark panel
   const wsGrad = X.createLinearGradient(0, L.wsY, 0, L.wsY + L.wsH);
   wsGrad.addColorStop(0, '#140e2a'); wsGrad.addColorStop(1, '#0e0a1e');
   X.fillStyle = wsGrad; X.fillRect(0, L.wsY, W, L.wsH);
   rr(0, L.wsY, W, L.wsH, 0, null, '#2a1c50', 1.5);
 
-  const mxW = Math.max(130, W - 340);
-  const sections = [
-    { x: 6,               w: 88,  label: 'TAPS'          },
-    { x: 98,              w: 56,  label: 'ICE'            },
-    { x: 158,             w: mxW, label: 'MIXING STATION' },
-    { x: 158 + mxW + 4,  w: 92,  label: 'SINK'           },
-    { x: 158 + mxW + 100, w: W - 158 - mxW - 104, label: 'SHAKE' },
-  ];
+  const secs = wsLayout();
+  const tapY  = L.wsY + L.wsH / 2 - 4;
 
-  sections.forEach(s => {
+  // Section cards
+  secs.forEach(s => {
     rr(s.x, L.wsY + 4, s.w, L.wsH - 8, 8, '#100820', '#2a1c50', 1.5);
     txt(s.label, s.x + s.w / 2, L.wsY + L.wsH - 6, '#3a2870', 7);
   });
 
-  // Beer taps — improved look
-  const tapY = L.wsY + L.wsH / 2 - 4;
-  [{ x: 26, c: '#7090d0', l: 'LITE' }, { x: 68, c: '#c09050', l: 'DARK' }].forEach(t => {
-    // Tap body
-    rr(t.x - 10, L.wsY + 8, 20, 34, 4, t.c + '55', t.c, 2);
-    // Tap handle
-    rr(t.x - 6, L.wsY + 4, 12, 8, 3, t.c, null);
-    // Spout curve
+  // ── Beer taps (inside TAPS section) ──
+  const tapSec = secs[0];
+  const t1x = tapSec.x + tapSec.w * 0.3;
+  const t2x = tapSec.x + tapSec.w * 0.72;
+  [{ x: t1x, c: '#7090d0', l: 'LITE' }, { x: t2x, c: '#c09050', l: 'DARK' }].forEach(t => {
+    rr(t.x - 10, L.wsY + 8,  20, 34, 4, t.c + '44', t.c, 2);
+    rr(t.x - 6,  L.wsY + 4,  12,  8, 3, t.c, null);
     X.strokeStyle = t.c; X.lineWidth = 3;
-    X.beginPath(); X.moveTo(t.x, L.wsY + 42); X.quadraticCurveTo(t.x - 10, L.wsY + 50, t.x - 12, L.wsY + 54); X.stroke();
-    // Label
-    txt(t.l, t.x + 1, L.wsY + L.wsH - 13, t.c, 7);
+    X.beginPath(); X.moveTo(t.x, L.wsY + 42); X.quadraticCurveTo(t.x - 8, L.wsY + 50, t.x - 10, L.wsY + 54); X.stroke();
+    txt(t.l, t.x, L.wsY + L.wsH - 13, t.c, 7);
   });
 
-  // Ice machine
-  const iceX = 126;
-  rr(iceX - 18, L.wsY + 10, 36, 38, 6, '#162840', '#3a7090', 1.5);
-  txt('🧊', iceX, tapY - 2, '#aaddff', 20);
+  // ── Ice machine ──
+  const iceSec = secs[1];
+  const iceCx  = iceSec.x + iceSec.w / 2;
+  rr(iceCx - 18, L.wsY + 10, 36, 38, 6, '#162840', '#3a7090', 1.5);
+  txt('🧊', iceCx, tapY - 2, '#aaddff', 20);
 
-  // Mixing station glass
-  const mxX = 158 + mxW / 2;
+  // ── Mixing station ──
+  const mxSec  = secs[2];
+  const mxCx   = mxSec.x + mxSec.w / 2;
   if (G.glass) {
-    drawGlassShape(mxX, tapY + 4, G.glass, G.ings, G.finished, 1.15);
+    drawGlassShape(mxCx, tapY + 4, G.glass, G.ings, G.finished, 1.15);
   } else {
-    X.save(); X.globalAlpha = 0.18; txt('pick glass ↑', mxX, tapY, '#9070c0', 10); X.restore();
+    X.save(); X.globalAlpha = 0.18; txt('pick glass ↑', mxCx, tapY, '#9070c0', 10); X.restore();
   }
 
-  // Ingredient chips below glass
+  // Ingredient chips
   if (G.ings.length > 0) {
+    const chipStartX = mxSec.x + 6;
     G.ings.slice(-8).forEach((id, i) => {
       const bst = BSTYLES[id];
       if (!bst) return;
-      const chipX = 160 + i * 18;
+      const chipX = chipStartX + i * 18;
       const chipY = L.wsY + 7;
       rr(chipX, chipY, 16, 16, 3, bst.body, bst.dark, 1);
       X.font = "bold 6px 'Fredoka', sans-serif";
@@ -448,30 +516,33 @@ function _drawWorkstation(L, G, frame) {
     });
   }
 
-  // Mix / Shake button
-  const mixBtnX = mxX - 30, mixBtnY = L.wsY + L.wsH - 20;
-  rr(mixBtnX, mixBtnY, 60, 14, 5,
+  // Mix button
+  const mixBtnY = L.wsY + L.wsH - 20;
+  rr(mxCx - 30, mixBtnY, 60, 14, 5,
      G.mixed ? '#1a4020' : '#1e1640',
      G.mixed ? '#4aaa60' : '#5a3898', 1.5);
-  txt(G.mixed ? '✅ MIXED' : '🔀 MIX', mxX, mixBtnY + 7,
+  txt(G.mixed ? '✅ MIXED' : '🔀 MIX', mxCx, mixBtnY + 7,
       G.mixed ? '#7dff9a' : '#b0a0e0', 8);
 
-  // "Drag to serve" pulse
+  // Drag-to-serve pulse
   if (G.finished && !window._dragging) {
     const pulse = 0.65 + 0.35 * Math.sin(frame * 0.14);
     X.save(); X.globalAlpha = pulse;
-    txt('✅ DRAG TO SERVE!', mxX, L.wsY + 9, '#7dff9a', 10); X.restore();
+    txt('✅ DRAG TO SERVE!', mxCx, L.wsY + 9, '#7dff9a', 10); X.restore();
   }
 
-  // Sink
-  const skX = sections[3].x + sections[3].w / 2;
-  rr(sections[3].x + 8, L.wsY + 10, sections[3].w - 16, 36, 5, '#0a1828', '#3a6080', 1.5);
-  txt('🚰', skX, tapY - 2, '#88aacc', 20);
+  // ── Sink ──
+  const skSec = secs[3];
+  const skCx  = skSec.x + skSec.w / 2;
+  rr(skSec.x + 8, L.wsY + 10, skSec.w - 16, 36, 5, '#0a1828', '#3a6080', 1.5);
+  txt('🚰', skCx, tapY - 2, '#88aacc', 20);
 
-  // Shaker / Jig
-  const jgX = sections[4].x + sections[4].w / 2;
-  rr(sections[4].x + 6, L.wsY + 10, sections[4].w - 12, 36, 5, '#180c28', '#7050b0', 1.5);
-  txt('🍶', jgX, tapY - 2, '#c8a0ff', 20);
+  // ── Cocktail shaker ──
+  const jgSec = secs[4];
+  const jgCx  = jgSec.x + jgSec.w / 2;
+  rr(jgSec.x + 6, L.wsY + 10, jgSec.w - 12, 36, 5, '#180c28', '#7050b0', 1.5);
+  _drawShaker(jgCx, tapY + 2);
+  txt('SHAKE', jgCx, L.wsY + L.wsH - 13, '#c8a0ff', 7);
 }
 
 // ─── SHELF TABS ─────────────────────────────────────────────────────────────

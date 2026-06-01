@@ -436,7 +436,6 @@ function pauseGame() {
 function resumeGame() {
   G.paused = false;
   document.getElementById('pausemodal').classList.remove('open');
-  requestAnimationFrame(loop);
 }
 
 function quitToMenu() {
@@ -457,14 +456,16 @@ document.addEventListener('keydown', e => {
 
 // ─── MAIN LOOP ────────────────────────────────────────────────────────────────
 function loop() {
-  if (!G.running || G.paused) return;
+  if (!G.running) return;
   frame++;
   buildRegions();
-  updateCustomers();
+  if (!G.paused) {
+    updateCustomers();                    // timers only tick when not paused
+    particles = particles.filter(p => p.life > 0);
+    floats    = floats.filter(f => f.life > 0);
+  }
   draw(G, frame, curTab, popupOpen, popupAnchorX, dragging, particles, floats);
-  particles = particles.filter(p => p.life > 0);
-  floats    = floats.filter(f => f.life > 0);
-  requestAnimationFrame(loop);
+  requestAnimationFrame(loop);           // loop always keeps running
 }
 
 // ─── EXPOSE TO HTML onclick ATTRIBUTES ───────────────────────────────────────

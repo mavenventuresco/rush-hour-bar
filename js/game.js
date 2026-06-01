@@ -246,8 +246,11 @@ function buildRegions() {
 }
 
 function pos(e) {
-  const r = cv.getBoundingClientRect();
-  if (e.touches) return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+  const r  = cv.getBoundingClientRect();
+  // touchend has empty e.touches — must read e.changedTouches for the lift position
+  const t  = (e.changedTouches && e.changedTouches[0])
+           || (e.touches && e.touches[0]);
+  if (t) return { x: t.clientX - r.left, y: t.clientY - r.top };
   return { x: e.clientX - r.left, y: e.clientY - r.top };
 }
 function hit(x, y) { return regions.find(r => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h); }
@@ -334,7 +337,7 @@ function handleUp(e) {
   G.stools.forEach((c, i) => {
     if (!c || c.state !== 'ordering') return;
     const cx = seatX(i), cy = L.barY + L.barH - 62;
-    if (Math.abs(p.x - cx) < 50 && p.y > cy - 28 && p.y < cy + 58) {
+    if (Math.abs(p.x - cx) < 60 && p.y > cy - 40 && p.y < cy + 70) {
       const d = c.drink;
       if (dragging.glass !== d.g) { flash('Wrong glass! Need: ' + GL.find(g => g.id === d.g).l); failSound(); dragging = null; ; return; }
       const req = d.steps.map(s => s.t === 'ice' ? 'ice' : s.id);

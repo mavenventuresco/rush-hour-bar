@@ -715,7 +715,7 @@ export function wsLayout() {
   // Proportional sections — always fill the screen width on any device
   const usable = W - 16;
   const GAP    = Math.max(2, Math.round(usable * 0.008));
-  const TAP_W  = Math.min(92,  Math.round(usable * 0.17));
+  const TAP_W  = Math.min(130, Math.round(usable * 0.22));
   const ICE_W  = Math.min(58,  Math.round(usable * 0.10));
   const SINK_W = Math.min(90,  Math.round(usable * 0.16));
   const JIG_W  = Math.min(78,  Math.round(usable * 0.13));
@@ -730,17 +730,20 @@ export function wsLayout() {
   ];
 }
 
-// Shared pill geometry — single row on desktop (W≥600), two rows on mobile
+// Shared pill geometry — single row on desktop (W≥600), two rows on mobile.
+// Pills are proportionally smaller than the glass rack cards (rackIW × cardH).
 export function pillLayout() {
-  const tabs   = Object.keys(SHELVES); // 9 categories
-  const rackIW = Math.min(96, (W - 16) / 6);
-  const rackW  = rackIW * 6;
-  const startX = Math.round((W - rackW) / 2);
-  const rows   = W < 600 ? 2 : 1;
-  const perRow = rows === 2 ? 5 : tabs.length; // row 0: 5 pills, row 1: 4 pills
-  const GAP    = Math.max(2, Math.round(rackW * 0.008));
-  const PW     = Math.round((rackW - GAP * (perRow - 1)) / perRow);
-  const PH     = Math.min(38, Math.max(26, Math.round(PW * 0.56)));
+  const tabs    = Object.keys(SHELVES);
+  const rackIW  = Math.min(96, (W - 16) / 6);
+  const cardH   = 52; // rackH(70) - 18 — glass card inner height
+  const rackW   = rackIW * 6;
+  const startX  = Math.round((W - rackW) / 2);
+  const rows    = W < 600 ? 2 : 1;
+  const perRow  = rows === 2 ? 5 : tabs.length;
+  const GAP     = Math.max(2, Math.round(rackW * 0.008));
+  const PW      = Math.round((rackW - GAP * (perRow - 1)) / perRow);
+  // Height = 52% of the glass card — noticeably smaller but not cramped
+  const PH      = Math.round(cardH * 0.52);
   return { tabs, startX, PW, PH, GAP, rackW, rows, perRow };
 }
 

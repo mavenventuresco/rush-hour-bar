@@ -19,16 +19,18 @@ window.onresize = resize;
 
 // ─── LAYOUT ──────────────────────────────────────────────────────────────────
 function lo() {
-  const hudH = 40, rackH = 56, wsH = 80, tabH = 34;
-  // Bar area fills all available space — shelf items are in popup now
-  const barH = Math.max(160, H - hudH - rackH - wsH - tabH - 14);
+  const hudH = 40, rackH = 56, barH = 200, wsH = 80, tabH = 34;
+  // Centre the content block in the space below the HUD with equal margins
+  const contentH = rackH + barH + wsH + tabH;
+  const availH   = H - hudH;
+  const topOff   = Math.round(Math.max(0, (availH - contentH) / 2));
   return {
     hudH, rackH, barH, wsH, tabH,
-    rackY:    hudH,
-    barY:     hudH + rackH,
-    counterY: hudH + rackH + barH - 18,
-    wsY:      hudH + rackH + barH,
-    tabY:     hudH + rackH + barH + wsH,
+    rackY:    hudH + topOff,
+    barY:     hudH + topOff + rackH,
+    counterY: hudH + topOff + rackH + barH - 18,
+    wsY:      hudH + topOff + rackH + barH,
+    tabY:     hudH + topOff + rackH + barH + wsH,
   };
 }
 

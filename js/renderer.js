@@ -1144,7 +1144,7 @@ function _drawWorkstation(L, G, frame, dragging) {
   const tapSec=secs[0];
   const t1x=tapSec.x+tapSec.w*0.3;
   const t2x=tapSec.x+tapSec.w*0.72;
-  [{x:t1x,c:'#6688cc',label:'LITE'},{x:t2x,c:'#bb8844',label:'DARK'}].forEach(t=>{
+  [{x:t1x,c:'#d4a017',label:'LITE'},{x:t2x,c:'#7a5c10',label:'DARK'}].forEach(t=>{
     _drawBeerTap(t.x, tapY, L.wsY, L.wsH, t.c, t.label);
   });
 

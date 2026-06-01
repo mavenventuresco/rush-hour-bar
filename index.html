@@ -21,6 +21,7 @@
   <button id="mutebtn" onclick="toggleMute()">🔊</button>
   <button onclick="openMenu()">📋 Menu</button>
   <button onclick="saveGame()">💾 Save</button>
+  <button id="pausebtn" onclick="pauseGame()">⏸</button>
 </div>
 
 <!-- Cocktail menu modal -->
@@ -44,6 +45,20 @@
   </div>
   <button class="bbtn" onclick="startGame()" id="startbtn">▶ OPEN THE BAR</button>
   <div id="loadinfo" style="font-size:11px;color:#6050a0;margin-top:12px"></div>
+</div>
+
+<!-- Pause menu -->
+<div class="modal" id="pausemodal">
+  <div class="pbox">
+    <div class="ptitle">⏸ PAUSED</div>
+    <div class="psub">Game is paused</div>
+    <button class="pbtn primary" onclick="resumeGame()">▶ Resume</button>
+    <button class="pbtn" onclick="saveGame(); resumeGame()">💾 Save &amp; Resume</button>
+    <button class="pbtn" onclick="resumeGame(); openMenu()">📋 Cocktail Menu</button>
+    <button class="pbtn" onclick="resumeGame(); document.getElementById('mutebtn').click()">🔊 Toggle Sound</button>
+    <button class="pbtn danger" onclick="quitToMenu()">✕ Quit to Menu</button>
+    <div class="phint">Press <kbd>Esc</kbd> or <kbd>P</kbd> to resume</div>
+  </div>
 </div>
 
 <!-- Flash notification -->

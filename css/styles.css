@@ -176,3 +176,83 @@ canvas {
 #logbar.g { color: #5ddd88; }
 #logbar.b { color: #ee6060; }
 #logbar.t { color: #f5c842; }
+
+/* ─── PAUSE BUTTON (HUD) ──────────────────────────────────────────────────── */
+#pausebtn {
+  margin-left: 0 !important;
+  background: #1a1040 !important;
+  border-color: #7a3898 !important;
+  color: #c8a0ff !important;
+  font-size: 14px !important;
+  padding: 4px 10px !important;
+  letter-spacing: 0;
+}
+#pausebtn:hover { background: #2a1860 !important; }
+
+/* ─── PAUSE MODAL ─────────────────────────────────────────────────────────── */
+#pausemodal {
+  z-index: 90;
+  background: rgba(4, 1, 12, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.pbox {
+  background: linear-gradient(160deg, #1a0e38, #0e0820);
+  border: 2px solid #5a3898;
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  min-width: 280px;
+  max-width: 340px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 40px #00000088, 0 0 60px #5a389822;
+}
+.ptitle {
+  font-size: 28px; font-weight: 700;
+  color: #f5c842; letter-spacing: 3px;
+  margin-bottom: 2px;
+  text-shadow: 0 0 20px #f5c84266;
+}
+.psub {
+  font-size: 11px; color: #6050a0;
+  letter-spacing: 1px; margin-bottom: 8px;
+}
+.pbtn {
+  width: 100%;
+  background: #1e1240;
+  border: 1.5px solid #3a2868;
+  border-radius: 10px;
+  color: #c0a8f0;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px; font-weight: 600;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  letter-spacing: 0.5px;
+}
+.pbtn:hover  { background: #2a1c58; border-color: #7a50c0; }
+.pbtn:active { transform: scale(0.97); }
+.pbtn.primary {
+  background: linear-gradient(135deg, #7a3aee, #5a1ac0);
+  border-color: #9a5aff;
+  color: #fff;
+  font-size: 16px;
+  padding: 12px 0;
+  box-shadow: 0 4px 20px #6a2aee44;
+}
+.pbtn.primary:hover { background: linear-gradient(135deg, #8a4aff, #6a2ad0); }
+.pbtn.danger  { border-color: #6a2030; color: #cc7080; }
+.pbtn.danger:hover  { background: #2a1020; border-color: #aa3050; color: #ee8090; }
+.phint {
+  font-size: 10px; color: #4a3868;
+  margin-top: 4px; letter-spacing: 0.5px;
+}
+.phint kbd {
+  background: #2a1e48; border: 1px solid #4a3070;
+  border-radius: 4px; padding: 1px 5px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 10px; color: #8070b0;
+}

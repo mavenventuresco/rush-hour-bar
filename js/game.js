@@ -410,9 +410,38 @@ function flash(m) {
   clearTimeout(G._ft); G._ft = setTimeout(() => e.classList.remove('show'), 2200);
 }
 
+// ─── PAUSE ───────────────────────────────────────────────────────────────────
+function pauseGame() {
+  if (!G.running) return;
+  G.paused = true;
+  document.getElementById('pausemodal').classList.add('open');
+}
+
+function resumeGame() {
+  G.paused = false;
+  document.getElementById('pausemodal').classList.remove('open');
+  requestAnimationFrame(loop);
+}
+
+function quitToMenu() {
+  G.running = false;
+  G.paused  = false;
+  setGameRunning(false);
+  document.getElementById('pausemodal').classList.remove('open');
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+// Escape or P to pause/resume
+document.addEventListener('keydown', e => {
+  if (!G.running) return;
+  if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
+    G.paused ? resumeGame() : pauseGame();
+  }
+});
+
 // ─── MAIN LOOP ────────────────────────────────────────────────────────────────
 function loop() {
-  if (!G.running) return;
+  if (!G.running || G.paused) return;
   frame++;
   buildRegions();
   updateCustomers();
@@ -429,3 +458,6 @@ window.saveGame   = saveGame;
 window.toggleMute = toggleMute;
 window.openMenu   = openMenu;
 window.closeMenu  = closeMenu;
+window.pauseGame  = pauseGame;
+window.resumeGame = resumeGame;
+window.quitToMenu = quitToMenu;

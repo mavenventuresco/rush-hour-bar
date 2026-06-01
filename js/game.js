@@ -19,18 +19,21 @@ window.onresize = resize;
 
 // ─── LAYOUT ──────────────────────────────────────────────────────────────────
 function lo() {
-  const hudH = 40, rackH = 56, barH = 144, wsH = 80, tabH = 34;
-  const shelfH = Math.max(80, H - hudH - rackH - barH - wsH - tabH - 22);
+  const hudH = 40, rackH = 56, wsH = 80, tabH = 34;
+  // Bar area fills all available space — shelf items are in popup now
+  const barH = Math.max(160, H - hudH - rackH - wsH - tabH - 14);
   return {
-    hudH, rackH, barH, wsH, tabH, shelfH,
+    hudH, rackH, barH, wsH, tabH,
     rackY:    hudH,
     barY:     hudH + rackH,
     counterY: hudH + rackH + barH - 18,
     wsY:      hudH + rackH + barH,
     tabY:     hudH + rackH + barH + wsH,
-    shelfY:   hudH + rackH + barH + wsH + tabH,
   };
 }
+
+// Popup open/closed state
+let popupOpen = false;
 
 function seatX(i) {
   const totalW = Math.min(W - 40, SEATS * 100);
@@ -230,18 +233,27 @@ function buildRegions() {
   regions.push({ id: 'mixbtn', x: mxCx - 30, y: L.wsY + L.wsH - 22, w: 60, h: 16, type: 'mixbtn' });
   regions.push({ id: 'sink',       x: skSec.x,  y: L.wsY, w: skSec.w,  h: L.wsH, type: 'sink' });
   regions.push({ id: 'jig',        x: jgSec.x,  y: L.wsY, w: jgSec.w,  h: L.wsH, type: 'jig'  });
-  const tabs = Object.keys(SHELVES); const tabW = W / tabs.length;
-  tabs.forEach((k, i) => regions.push({ id: 'tab_' + k, x: i * tabW, y: L.tabY, w: tabW, h: L.tabH, type: 'shelftab', key: k }));
-
-  // Shelf items
-  const items = SHELVES[curTab].items;
-  const iw = 60, ih = 56, gap = 5;
-  const totalW = items.length * (iw + gap) - gap;
-  const startX = (W - totalW) / 2;
-  items.forEach((item, i) => {
-    const ix = startX + i * (iw + gap);
-    regions.push({ id: 'item_' + item.id, x: ix, y: L.shelfY + 6, w: iw, h: ih, type: 'shelfitem', itemId: item.id });
+  // Compact centred pill tabs
+  const tabs = Object.keys(SHELVES);
+  const PW = 56, PH = 26, GAP = 5;
+  const totalPW = tabs.length * (PW + GAP) - GAP;
+  const tabStartX = Math.round((W - totalPW) / 2);
+  const tabTY = L.tabY + Math.round((L.tabH - PH) / 2);
+  tabs.forEach((k, i) => {
+    const tx = tabStartX + i * (PW + GAP);
+    regions.push({ id: 'tab_' + k, x: tx, y: tabTY, w: PW, h: PH, type: 'shelftab', key: k });
   });
+
+  // Popup item regions — only active when popup is open
+  if (popupOpen) {
+    const p = shelfPopupLayout(curTab);
+    p.items.forEach((item, i) => {
+      const col = i % p.COLS, row = Math.floor(i / p.COLS);
+      const ix = p.px + 16 + col * (p.IW + p.GAP);
+      const iy = p.py + 36 + row * (p.IH + p.GAP);
+      regions.push({ id: 'item_' + item.id, x: ix, y: iy, w: p.IW, h: p.IH, type: 'shelfitem', itemId: item.id });
+    });
+  }
 }
 
 function pos(e) {
@@ -255,6 +267,13 @@ function handleDown(e) {
   if (!G.running) return;
   const p = pos(e);
   const L = lo();
+
+  // Close popup on click outside the panel
+  if (popupOpen) {
+    const pl = shelfPopupLayout(curTab);
+    const inside = p.x >= pl.px && p.x <= pl.px + pl.pw && p.y >= pl.py && p.y <= pl.py + pl.ph;
+    if (!inside) { popupOpen = false; return; }
+  }
 
   // Tap on order bubble → show recipe
   G.stools.forEach((c, i) => {
@@ -281,7 +300,10 @@ function handleDown(e) {
     G.glass = null; G.ings = []; G.mixed = false; G.finished = false; dragging = null;
     G.combo = 0; updCombo(); failSound(); setLog('Dumped in the sink 🚰', 'b');
   } else if (h.type === 'shelftab') {
-    curTab = h.key; clickSfx();
+    if (curTab === h.key) { popupOpen = !popupOpen; }
+    else { curTab = h.key; popupOpen = true; }
+    clickSfx();
+    return;
   } else if (h.type === 'shelfitem') {
     if (!G.glass) { flash('Pick a glass first!'); return; }
     G.ings.push(h.itemId); G.mixed = false; G.finished = false; checkFinished(); clickSfx();
@@ -405,7 +427,7 @@ function loop() {
   frame++;
   buildRegions();
   updateCustomers();
-  draw(G, frame, curTab, dragging, particles, floats);
+  draw(G, frame, curTab, popupOpen, dragging, particles, floats);
   particles = particles.filter(p => p.life > 0);
   floats    = floats.filter(f => f.life > 0);
   requestAnimationFrame(loop);

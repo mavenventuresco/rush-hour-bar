@@ -13,6 +13,12 @@ window.addEventListener('resize', resize);
 let popupOpen    = false;
 let popupAnchorX = 0;
 
+function setPopup(open, anchorX) {
+  popupOpen = open;
+  if (anchorX !== undefined) popupAnchorX = anchorX;
+  if (G.running) G.paused = open; // freeze timers while browsing ingredients
+}
+
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const SEATS = 8;
@@ -269,16 +275,16 @@ function handleDown(e) {
     const tabHit = regions.find(r => r.type === 'shelftab' &&
       p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
     if (tabHit) {
-      popupAnchorX = tabHit.x + tabHit.w / 2;
-      if (curTab === tabHit.key) { popupOpen = false; }
-      else { curTab = tabHit.key; popupOpen = true; }
+      const ax = tabHit.x + tabHit.w / 2;
+      if (curTab === tabHit.key) { setPopup(false, ax); }
+      else { curTab = tabHit.key; setPopup(true, ax); }
       clickSfx(); return;
     }
     // Non-tab click outside popup panel → close
     const pl = shelfPopupLayout(curTab, popupAnchorX);
     const inside = p.x >= pl.px && p.x <= pl.px + pl.pw &&
                    p.y >= pl.py && p.y <= pl.py + pl.ph;
-    if (!inside) { popupOpen = false; return; }
+    if (!inside) { setPopup(false); return; }
   }
 
   // Two-tap mobile serving: if holding a finished drink, tap on a customer to serve
@@ -310,9 +316,9 @@ function handleDown(e) {
     G.combo = 0; updCombo(); failSound(); setLog('Dumped in the sink 🚰', 'b');
   } else if (h.type === 'shelftab') {
     // Anchor the popup over the centre of the pill that was tapped
-    popupAnchorX = h.x + h.w / 2;
-    if (curTab === h.key) { popupOpen = !popupOpen; }
-    else { curTab = h.key; popupOpen = true; }
+    const ax = h.x + h.w / 2;
+    if (curTab === h.key) { setPopup(!popupOpen, ax); }
+    else { curTab = h.key; setPopup(true, ax); }
     clickSfx();
     return;
   } else if (h.type === 'shelfitem') {

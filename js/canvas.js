@@ -20,7 +20,7 @@ export function resize() {
 
 export function lo() {
   const hudH = 40, rackH = 70, barH = 150, wsH = 78;
-  const tabH = W < 600 ? 66 : 38; // 2-row mobile: 27*2+GAP+8≈64; 1-row desktop: 27+8=35
+  const tabH = W < 600 ? 118 : 62; // PH=52; 2-row: 52×2+GAP+12; 1-row: 52+10
   const contentH = rackH + barH + wsH + tabH;
   const availH   = H - hudH;
   // 0.25 puts 25% of the gap above the content, leaving more space at the bottom

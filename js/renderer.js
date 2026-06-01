@@ -744,8 +744,7 @@ export function pillLayout() {
   const perRow  = rows === 2 ? 5 : tabs.length;
   const GAP     = Math.max(2, Math.round(rackW * 0.008));
   const PW      = Math.round((rackW - GAP * (perRow - 1)) / perRow);
-  // Height = 52% of the glass card — noticeably smaller but not cramped
-  const PH      = Math.round(cardH * 0.52);
+  const PH      = 52; // match glass card height exactly (rackH 70 - 18)
   return { tabs, startX, PW, PH, GAP, rackW, rows, perRow };
 }
 

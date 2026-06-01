@@ -22,7 +22,8 @@ export function lo() {
   const hudH = 40, rackH = 70, barH = 150, wsH = 78, tabH = 36;
   const contentH = rackH + barH + wsH + tabH;
   const availH   = H - hudH;
-  const topOff   = Math.round(Math.max(0, (availH - contentH) / 2));
+  // 0.25 puts 25% of the gap above the content, leaving more space at the bottom
+  const topOff   = Math.round(Math.max(0, (availH - contentH) * 0.25));
   return {
     hudH, rackH, barH, wsH, tabH,
     rackY:    hudH + topOff,

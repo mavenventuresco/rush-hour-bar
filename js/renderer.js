@@ -858,7 +858,14 @@ function _drawGlassRack(L, G, frame) {
     // Glass illustration
     drawGlassShape(cx, cy, gl.id, [], false, 0.88);
 
-    txt(gl.l, cx, cardTop+cardH-7, sel?'#f5c842':'#7060a0', 10);
+    // Translucent pill behind label
+    const labelColor = sel ? '#f5c842' : '#7060a0';
+    const pillW = 52, pillH = 16;
+    X.save(); X.globalAlpha = sel ? 0.22 : 0.15;
+    rr(cx - pillW/2, cardTop+cardH-16, pillW, pillH, pillH/2,
+       sel ? '#f5c842' : '#3a2860', null);
+    X.restore();
+    txt(gl.l, cx, cardTop+cardH-8, labelColor, 10);
   });
 }
 

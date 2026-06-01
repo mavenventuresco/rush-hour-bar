@@ -19,7 +19,8 @@ export function resize() {
 }
 
 export function lo() {
-  const hudH = 40, rackH = 70, barH = 150, wsH = 78, tabH = 50; // 50 fits 2-row pills
+  const hudH = 40, rackH = 70, barH = 150, wsH = 78;
+  const tabH = W < 600 ? 88 : 50; // 88 fits 2-row pills on mobile
   const contentH = rackH + barH + wsH + tabH;
   const availH   = H - hudH;
   // 0.25 puts 25% of the gap above the content, leaving more space at the bottom

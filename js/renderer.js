@@ -730,20 +730,17 @@ export function wsLayout() {
   ];
 }
 
-// Shared pill geometry — aligns with glass rack, stacks to 2 rows on mobile
+// Shared pill geometry — single row on desktop (W≥600), two rows on mobile
 export function pillLayout() {
   const tabs   = Object.keys(SHELVES); // 9 categories
   const rackIW = Math.min(96, (W - 16) / 6);
   const rackW  = rackIW * 6;
   const startX = Math.round((W - rackW) / 2);
-  const GAP    = Math.max(2, Math.round(rackW * 0.006));
-
-  // Single row if pills would be ≥36px wide, else split into 2 rows
-  const pwSingle = Math.round((rackW - GAP * (tabs.length - 1)) / tabs.length);
-  const rows     = pwSingle < 36 ? 2 : 1;
-  const perRow   = rows === 2 ? Math.ceil(tabs.length / 2) : tabs.length; // 5 top, 4 bottom
-  const PW       = Math.round((rackW - GAP * (perRow - 1)) / perRow);
-  const PH       = Math.min(38, Math.max(26, Math.round(PW * 0.58)));
+  const rows   = W < 600 ? 2 : 1;
+  const perRow = rows === 2 ? 5 : tabs.length; // row 0: 5 pills, row 1: 4 pills
+  const GAP    = Math.max(2, Math.round(rackW * 0.008));
+  const PW     = Math.round((rackW - GAP * (perRow - 1)) / perRow);
+  const PH     = Math.min(38, Math.max(26, Math.round(PW * 0.56)));
   return { tabs, startX, PW, PH, GAP, rackW, rows, perRow };
 }
 

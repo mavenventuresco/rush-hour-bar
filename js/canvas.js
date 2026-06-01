@@ -19,7 +19,7 @@ export function resize() {
 }
 
 export function lo() {
-  const hudH = 40, rackH = 56, barH = 160, wsH = 78, tabH = 36;
+  const hudH = 40, rackH = 70, barH = 150, wsH = 78, tabH = 36;
   const contentH = rackH + barH + wsH + tabH;
   const availH   = H - hudH;
   const topOff   = Math.round(Math.max(0, (availH - contentH) / 2));

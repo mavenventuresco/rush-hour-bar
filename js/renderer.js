@@ -46,166 +46,164 @@ export function drawGlassShape(x, y, type, ings, finished, sc = 1) {
   X.lineCap = 'round'; X.lineJoin = 'round';
 
   const stroke = finished ? '#f5c842' : '#c8bce8';
-  const lw = Math.max(1.4, 2 / sc);
+  const lw = Math.max(1.6, 2.2 / sc);
   X.strokeStyle = stroke; X.lineWidth = lw;
   if (finished) { X.shadowBlur = 20; X.shadowColor = '#f5c84455'; }
 
   const liq    = liquidColor(ings);
   const hasIce = ings.includes('ice');
+  const empty  = ings.length === 0;
 
-  // Shared glass-body highlight helper (left-side sheen)
-  function _glassSheen(path) {
-    X.save(); X.globalAlpha = 0.1; X.fillStyle = '#ffffff';
+  // Frosted-glass fill — makes glasses visible even when empty
+  function _glassBody(path) {
+    X.save(); X.globalAlpha = empty ? 0.07 : 0.04; X.fillStyle = '#c8c0ff';
+    path(); X.fill(); X.restore();
+  }
+  function _sheen(path) {
+    X.save(); X.globalAlpha = 0.18; X.fillStyle = '#ffffff';
     path(); X.fill(); X.restore();
   }
 
   switch (type) {
 
+    // ── Wine glass — tall tulip bowl, elegant stem ───────────────────────────
     case 'wine': {
-      // Liquid fill
+      const bowl = () => {
+        X.moveTo(-10,-26);
+        X.bezierCurveTo(-20,-22,-22,0,-13,14);
+        X.bezierCurveTo(-9,19,-4,22,-3,22);
+        X.lineTo(3,22);
+        X.bezierCurveTo(4,22,9,19,13,14);
+        X.bezierCurveTo(22,0,20,-22,10,-26); X.closePath();
+      };
       if (liq) {
-        X.save(); X.globalAlpha = 0.75;
-        X.beginPath();
-        X.moveTo(-14,2); X.bezierCurveTo(-16,8,-10,17,-3,20);
-        X.lineTo(3,20); X.bezierCurveTo(10,17,16,8,14,2); X.closePath();
-        X.fillStyle = liq; X.fill(); X.restore();
+        X.save(); X.globalAlpha=0.78;
+        X.beginPath(); X.moveTo(-14,2); X.bezierCurveTo(-18,8,-11,18,-3,22);
+        X.lineTo(3,22); X.bezierCurveTo(11,18,18,8,14,2); X.closePath();
+        X.fillStyle=liq; X.fill(); X.restore();
       }
-      // Outline (drawn on top so it's always sharp)
-      X.beginPath();
-      X.moveTo(-10,-24);
-      X.bezierCurveTo(-18,-22,-20,0,-12,14);
-      X.bezierCurveTo(-9,18,-5,20,-3,20);
-      X.lineTo(-3,27); X.lineTo(-9,27); X.lineTo(-9,30); X.lineTo(9,30);
-      X.lineTo(9,27); X.lineTo(3,27); X.lineTo(3,20);
-      X.bezierCurveTo(5,20,9,18,12,14);
-      X.bezierCurveTo(20,0,18,-22,10,-24); X.closePath(); X.stroke();
-      // Sheen
-      _glassSheen(() => {
-        X.moveTo(-9,-22); X.bezierCurveTo(-15,-18,-17,-4,-12,10);
-        X.lineTo(-8,10); X.bezierCurveTo(-12,-2,-10,-16,-6,-22); X.closePath();
-      });
+      X.beginPath(); bowl();
+      _glassBody(bowl);
+      X.beginPath(); bowl(); X.stroke();
+      // Stem + foot
+      X.beginPath(); X.moveTo(-3,22); X.lineTo(-3,29); X.lineTo(-10,29);
+      X.lineTo(-10,32); X.lineTo(10,32); X.lineTo(10,29); X.lineTo(3,29); X.lineTo(3,22); X.stroke();
+      _sheen(() => { X.moveTo(-9,-24); X.bezierCurveTo(-16,-18,-18,-2,-13,12); X.lineTo(-9,12); X.bezierCurveTo(-14,0,-11,-14,-6,-24); X.closePath(); });
       break;
     }
 
+    // ── Martini — dramatic wide V, thin stem ────────────────────────────────
     case 'martini': {
       if (liq) {
-        X.save(); X.globalAlpha = 0.75;
-        X.beginPath(); X.moveTo(-14,-6); X.lineTo(0,10); X.lineTo(14,-6); X.closePath();
-        X.fillStyle = liq; X.fill(); X.restore();
+        X.save(); X.globalAlpha=0.78;
+        X.beginPath(); X.moveTo(-16,-8); X.lineTo(0,12); X.lineTo(16,-8); X.closePath();
+        X.fillStyle=liq; X.fill(); X.restore();
       }
-      // Wide rim
-      X.beginPath(); X.moveTo(-20,-24); X.lineTo(0,10); X.lineTo(20,-24); X.closePath(); X.stroke();
+      // Bowl fill
+      X.save(); X.globalAlpha=0.07; X.fillStyle='#c8c0ff';
+      X.beginPath(); X.moveTo(-22,-26); X.lineTo(0,12); X.lineTo(22,-26); X.closePath(); X.fill(); X.restore();
+      // Bowl outline
+      X.beginPath(); X.moveTo(-22,-26); X.lineTo(0,12); X.lineTo(22,-26); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-22,-26); X.lineTo(22,-26); X.stroke(); // rim bar
       // Stem + foot
-      X.beginPath(); X.moveTo(0,10); X.lineTo(0,26);
-      X.moveTo(-8,26); X.lineTo(8,26); X.stroke();
-      // Rim line
-      X.beginPath(); X.moveTo(-20,-24); X.lineTo(20,-24); X.stroke();
-      _glassSheen(() => {
-        X.moveTo(-18,-24); X.lineTo(-4,8); X.lineTo(-1,8); X.lineTo(-14,-24); X.closePath();
-      });
+      X.beginPath(); X.moveTo(0,12); X.lineTo(0,28);
+      X.moveTo(-9,28); X.lineTo(9,28); X.stroke();
+      _sheen(() => { X.moveTo(-20,-26); X.lineTo(-5,10); X.lineTo(-2,10); X.lineTo(-16,-26); X.closePath(); });
       break;
     }
 
+    // ── Shot glass — very short, thick walls, wide base ─────────────────────
     case 'shot': {
       if (liq) {
-        X.save(); X.globalAlpha = 0.78;
-        X.beginPath(); X.moveTo(-5,-2); X.lineTo(-6,13); X.lineTo(6,13); X.lineTo(5,-2); X.closePath();
-        X.fillStyle = liq; X.fill(); X.restore();
+        X.save(); X.globalAlpha=0.82;
+        X.beginPath(); X.moveTo(-6,-4); X.lineTo(-7,12); X.lineTo(7,12); X.lineTo(6,-4); X.closePath();
+        X.fillStyle=liq; X.fill(); X.restore();
       }
-      // Thick-walled cylinder with slight taper
-      X.beginPath();
-      X.moveTo(-7,-18); X.lineTo(-8,14); X.lineTo(8,14); X.lineTo(7,-18); X.closePath(); X.stroke();
-      // Rim highlight
-      X.beginPath(); X.moveTo(-7,-18); X.lineTo(7,-18); X.stroke();
-      // Thick base
-      X.save(); X.globalAlpha=0.4;
-      X.beginPath(); X.moveTo(-8,10); X.lineTo(-8,14); X.lineTo(8,14); X.lineTo(8,10); X.closePath();
-      X.fillStyle='#b0a0d8'; X.fill(); X.restore();
-      _glassSheen(() => { X.moveTo(-6,-16); X.lineTo(-7,12); X.lineTo(-4,12); X.lineTo(-3,-16); X.closePath(); });
+      X.save(); X.globalAlpha=0.08; X.fillStyle='#c8c0ff';
+      X.beginPath(); X.moveTo(-8,-16); X.lineTo(-9,14); X.lineTo(9,14); X.lineTo(8,-16); X.closePath(); X.fill(); X.restore();
+      X.beginPath(); X.moveTo(-8,-16); X.lineTo(-9,14); X.lineTo(9,14); X.lineTo(8,-16); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-8,-16); X.lineTo(8,-16); X.stroke(); // rim
+      // Thick base bar
+      X.save(); X.globalAlpha=0.45;
+      X.beginPath(); X.moveTo(-9,10); X.lineTo(-9,14); X.lineTo(9,14); X.lineTo(9,10); X.closePath();
+      X.fillStyle='#a090cc'; X.fill(); X.restore();
+      _sheen(() => { X.moveTo(-7,-14); X.lineTo(-8,12); X.lineTo(-5,12); X.lineTo(-4,-14); X.closePath(); });
       break;
     }
 
+    // ── Tumbler — wide & squat, clearly shorter than highball ───────────────
     case 'rocks': {
       if (liq) {
-        X.save(); X.globalAlpha = 0.75;
-        X.beginPath(); X.moveTo(-14,0); X.lineTo(-15,15); X.lineTo(15,15); X.lineTo(14,0); X.closePath();
-        X.fillStyle = liq; X.fill();
-        if (hasIce) {
-          X.globalAlpha = 0.55;
-          rr(-9,2,7,7,2,'#cceeff',null); rr(2,4,6,6,2,'#ddeeff',null);
-        }
+        X.save(); X.globalAlpha=0.78;
+        X.beginPath(); X.moveTo(-16,0); X.lineTo(-17,14); X.lineTo(17,14); X.lineTo(16,0); X.closePath();
+        X.fillStyle=liq; X.fill();
+        if (hasIce) { X.globalAlpha=0.6; rr(-11,2,8,7,2,'#cceeff',null); rr(3,4,7,6,2,'#ddeeff',null); }
         X.restore();
       }
-      // Squat tumbler — slight taper
-      X.beginPath();
-      X.moveTo(-15,-12); X.lineTo(-16,16); X.lineTo(16,16); X.lineTo(15,-12); X.closePath(); X.stroke();
-      X.beginPath(); X.moveTo(-15,-12); X.lineTo(15,-12); X.stroke(); // rim
-      // Base thickness
-      X.save(); X.globalAlpha=0.35;
-      X.beginPath(); X.moveTo(-16,12); X.lineTo(-16,16); X.lineTo(16,16); X.lineTo(16,12); X.closePath();
-      X.fillStyle='#b0a0d8'; X.fill(); X.restore();
-      _glassSheen(() => { X.moveTo(-14,-10); X.lineTo(-15,14); X.lineTo(-10,14); X.lineTo(-9,-10); X.closePath(); });
+      X.save(); X.globalAlpha=0.08; X.fillStyle='#c8c0ff';
+      X.beginPath(); X.moveTo(-18,-12); X.lineTo(-19,16); X.lineTo(19,16); X.lineTo(18,-12); X.closePath(); X.fill(); X.restore();
+      X.beginPath(); X.moveTo(-18,-12); X.lineTo(-19,16); X.lineTo(19,16); X.lineTo(18,-12); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-18,-12); X.lineTo(18,-12); X.stroke(); // rim
+      X.save(); X.globalAlpha=0.4;
+      X.beginPath(); X.moveTo(-19,12); X.lineTo(-19,16); X.lineTo(19,16); X.lineTo(19,12); X.closePath();
+      X.fillStyle='#a090cc'; X.fill(); X.restore();
+      _sheen(() => { X.moveTo(-17,-10); X.lineTo(-18,14); X.lineTo(-12,14); X.lineTo(-11,-10); X.closePath(); });
       break;
     }
 
+    // ── Highball — tall & narrow, clearly taller than tumbler ───────────────
     case 'tall': {
       if (liq) {
-        X.save(); X.globalAlpha = 0.75;
-        X.beginPath(); X.moveTo(-8,-6); X.lineTo(-9,22); X.lineTo(9,22); X.lineTo(8,-6); X.closePath();
-        X.fillStyle = liq; X.fill();
-        if (hasIce) { X.globalAlpha=0.5; rr(-6,-4,5,7,2,'#cceeff',null); }
+        X.save(); X.globalAlpha=0.78;
+        X.beginPath(); X.moveTo(-7,-8); X.lineTo(-8,22); X.lineTo(8,22); X.lineTo(7,-8); X.closePath();
+        X.fillStyle=liq; X.fill();
+        if (hasIce) { X.globalAlpha=0.55; rr(-5,-6,5,7,2,'#cceeff',null); }
         X.restore();
       }
-      // Tall straight cylinder
-      X.beginPath();
-      X.moveTo(-9,-28); X.lineTo(-10,24); X.lineTo(10,24); X.lineTo(9,-28); X.closePath(); X.stroke();
-      X.beginPath(); X.moveTo(-9,-28); X.lineTo(9,-28); X.stroke(); // rim
-      X.save(); X.globalAlpha=0.35;
-      X.beginPath(); X.moveTo(-10,20); X.lineTo(-10,24); X.lineTo(10,24); X.lineTo(10,20); X.closePath();
-      X.fillStyle='#b0a0d8'; X.fill(); X.restore();
-      _glassSheen(() => { X.moveTo(-8,-26); X.lineTo(-9,22); X.lineTo(-5,22); X.lineTo(-4,-26); X.closePath(); });
+      X.save(); X.globalAlpha=0.08; X.fillStyle='#c8c0ff';
+      X.beginPath(); X.moveTo(-8,-26); X.lineTo(-9,24); X.lineTo(9,24); X.lineTo(8,-26); X.closePath(); X.fill(); X.restore();
+      X.beginPath(); X.moveTo(-8,-26); X.lineTo(-9,24); X.lineTo(9,24); X.lineTo(8,-26); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-8,-26); X.lineTo(8,-26); X.stroke(); // rim
+      X.save(); X.globalAlpha=0.4;
+      X.beginPath(); X.moveTo(-9,20); X.lineTo(-9,24); X.lineTo(9,24); X.lineTo(9,20); X.closePath();
+      X.fillStyle='#a090cc'; X.fill(); X.restore();
+      _sheen(() => { X.moveTo(-7,-24); X.lineTo(-8,22); X.lineTo(-4,22); X.lineTo(-3,-24); X.closePath(); });
       break;
     }
 
+    // ── Beer mug — barrel shape, strong D-handle ─────────────────────────────
     case 'mug': {
       if (liq) {
-        X.save(); X.globalAlpha = 0.78;
-        X.beginPath(); X.moveTo(-11,-4); X.lineTo(-12,18); X.lineTo(10,18); X.lineTo(9,-4); X.closePath();
-        X.fillStyle = liq; X.fill();
+        X.save(); X.globalAlpha=0.82;
+        X.beginPath(); X.moveTo(-12,-6); X.lineTo(-13,18); X.lineTo(11,18); X.lineTo(10,-6); X.closePath();
+        X.fillStyle=liq; X.fill();
         if (ings.some(i=>['light','dark'].includes(i))) {
           X.fillStyle='#ffffffcc';
-          X.beginPath(); X.ellipse(-1,-4,10,4,0,0,Math.PI*2); X.fill();
+          X.beginPath(); X.ellipse(-1,-6,11,4.5,0,0,Math.PI*2); X.fill();
         }
         X.restore();
       }
-      // Barrel body with subtle ring
-      X.beginPath();
-      X.moveTo(-13,-22); X.lineTo(-14,20); X.lineTo(12,20); X.lineTo(11,-22); X.closePath(); X.stroke();
+      X.save(); X.globalAlpha=0.08; X.fillStyle='#c8c0ff';
+      X.beginPath(); X.moveTo(-13,-22); X.lineTo(-14,20); X.lineTo(12,20); X.lineTo(11,-22); X.closePath(); X.fill(); X.restore();
+      // Body
+      X.beginPath(); X.moveTo(-13,-22); X.lineTo(-14,20); X.lineTo(12,20); X.lineTo(11,-22); X.closePath(); X.stroke();
       X.beginPath(); X.moveTo(-13,-22); X.lineTo(11,-22); X.stroke(); // rim
-      // Barrel ring mid-way
-      X.save(); X.globalAlpha=0.3; X.strokeStyle=stroke; X.lineWidth=lw*0.7;
+      // Barrel ring
+      X.save(); X.globalAlpha=0.35; X.strokeStyle=stroke; X.lineWidth=lw*0.8;
       X.beginPath(); X.moveTo(-13,-2); X.lineTo(11,-2); X.stroke(); X.restore();
-      // D-handle — thick, rounded
-      X.beginPath();
-      X.moveTo(11,-10);
-      X.bezierCurveTo(26,-10,26,0,22,6);
-      X.bezierCurveTo(20,10,16,12,11,12); X.stroke();
-      // Handle inner detail
-      X.save(); X.globalAlpha=0.3; X.lineWidth=lw*0.6;
-      X.beginPath();
-      X.moveTo(11,-7); X.bezierCurveTo(22,-7,22,0,18,5); X.bezierCurveTo(16,8,13,10,11,10); X.stroke();
-      X.restore();
-      _glassSheen(() => { X.moveTo(-12,-20); X.lineTo(-13,18); X.lineTo(-8,18); X.lineTo(-7,-20); X.closePath(); });
+      // Bold D-handle
+      X.beginPath(); X.moveTo(11,-12); X.bezierCurveTo(28,-12,28,2,24,8); X.bezierCurveTo(22,12,17,14,11,14); X.stroke();
+      X.save(); X.globalAlpha=0.28; X.lineWidth=lw*0.65;
+      X.beginPath(); X.moveTo(11,-9); X.bezierCurveTo(24,-9,24,2,20,7); X.bezierCurveTo(18,10,14,12,11,12); X.stroke(); X.restore();
+      _sheen(() => { X.moveTo(-12,-20); X.lineTo(-13,18); X.lineTo(-8,18); X.lineTo(-7,-20); X.closePath(); });
       break;
     }
   }
 
   X.shadowBlur = 0;
 
-  // ── Finished-drink garnish ──
   if (finished && ings.length) {
     _drawGarnish(type, ings);
-    // Gentle sparkle dots
     X.save(); X.fillStyle='#f5c842';
     [[16,-20],[-15,-16],[1,-32]].forEach(([dx,dy])=>{
       X.beginPath(); X.arc(dx,dy,2.2,0,Math.PI*2); X.fill();
@@ -741,36 +739,48 @@ function _drawGlassRack(L, G, frame) {
   X.fillStyle=beam; X.fillRect(W*0.06, L.rackY+4, W*0.88, 6);
   X.save(); X.globalAlpha=0.3; X.fillStyle='#8060b0'; X.fillRect(W*0.06,L.rackY+4,W*0.88,1); X.restore();
 
-  const rackIW = Math.min(84,(W-24)/6);
+  const rackIW = Math.min(96,(W-16)/6);
   const rackStartX = (W-rackIW*6)/2;
 
   GL.forEach((gl, i) => {
-    const cx = rackStartX + i*rackIW + rackIW/2;
-    const cy = L.rackY + L.rackH/2 + 8;
-    const sel = G.glass===gl.id;
+    const cx  = rackStartX + i*rackIW + rackIW/2;
+    // Glass centered in upper 3/4, label pinned to bottom
+    const cy  = L.rackY + 18 + (L.rackH - 32) * 0.48;
+    const sel = G.glass === gl.id;
+    const cardTop = L.rackY + 14;
+    const cardH   = L.rackH - 18;
 
-    // Hanging chain
-    X.strokeStyle='#3a2870'; X.lineWidth=1.5;
-    X.beginPath(); X.moveTo(cx,L.rackY+10); X.lineTo(cx,L.rackY+17); X.stroke();
-    // Hook circle
-    X.beginPath(); X.arc(cx,L.rackY+17,2,0,Math.PI*2);
-    X.strokeStyle='#5a4090'; X.lineWidth=1.2; X.stroke();
+    // Hanging hook
+    X.strokeStyle = '#3a2870'; X.lineWidth = 1.5;
+    X.beginPath(); X.moveTo(cx, L.rackY + 8); X.lineTo(cx, cardTop); X.stroke();
+    X.beginPath(); X.arc(cx, cardTop, 2.5, 0, Math.PI*2);
+    X.strokeStyle = '#5a4090'; X.lineWidth = 1.2; X.stroke();
 
-    // Card
-    const cardG = X.createLinearGradient(0,L.rackY+17,0,L.rackY+L.rackH-2);
-    if (sel) { cardG.addColorStop(0,'#2a1e58'); cardG.addColorStop(1,'#1a1240'); }
-    else      { cardG.addColorStop(0,'#110830'); cardG.addColorStop(1,'#0a0420'); }
-    rr(cx-rackIW/2+3, L.rackY+17, rackIW-6, L.rackH-21, 7, cardG, sel?'#f5c842':'#2a1850', sel?2:1);
+    // Card background
+    const cardG = X.createLinearGradient(0, cardTop, 0, cardTop+cardH);
+    if (sel) { cardG.addColorStop(0,'#2c2060'); cardG.addColorStop(1,'#1a1244'); }
+    else      { cardG.addColorStop(0,'#120830'); cardG.addColorStop(1,'#0a0420'); }
+    rr(cx - rackIW/2+3, cardTop, rackIW-6, cardH, 8, cardG, sel?'#f5c842':'#251848', sel?2:1.2);
 
+    // Gold glow on selected
     if (sel) {
-      X.save(); X.globalAlpha=0.18+0.1*Math.sin(frame*0.1);
-      X.shadowBlur=14; X.shadowColor='#f5c842';
-      rr(cx-rackIW/2+3,L.rackY+17,rackIW-6,L.rackH-21,7,'#f5c84222',null);
+      X.save(); X.globalAlpha = 0.15 + 0.1*Math.sin(frame*0.1);
+      X.shadowBlur = 16; X.shadowColor = '#f5c842';
+      rr(cx-rackIW/2+3, cardTop, rackIW-6, cardH, 8, '#f5c84222', null);
       X.restore();
     }
 
-    drawGlassShape(cx,cy,gl.id,[],false,0.82);
-    txt(gl.l,cx,L.rackY+L.rackH-4,sel?'#f5c842':'#6a5090',9);
+    // Glass illustration
+    drawGlassShape(cx, cy, gl.id, [], false, 0.88);
+
+    // Label — two-line for longer names
+    const words = gl.l.split(' ');
+    if (words.length === 2) {
+      txt(words[0], cx, cardTop+cardH-13, sel?'#f5c842':'#7060a0', 8);
+      txt(words[1], cx, cardTop+cardH-4,  sel?'#f5c842':'#7060a0', 8);
+    } else {
+      txt(gl.l, cx, cardTop+cardH-6, sel?'#f5c842':'#7060a0', 9);
+    }
   });
 }
 

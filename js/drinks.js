@@ -1,11 +1,11 @@
 // Glass types
 export const GL = [
-  { id: 'wine',    l: 'Wine Glass' },
-  { id: 'martini', l: 'Martini'   },
-  { id: 'shot',    l: 'Shot Glass' },
-  { id: 'rocks',   l: 'Rocks Glass' },
-  { id: 'tall',    l: 'Tall Glass' },
-  { id: 'mug',     l: 'Beer Mug'  },
+  { id: 'wine',    l: 'Wine'    },
+  { id: 'martini', l: 'Martini' },
+  { id: 'shot',    l: 'Shot'    },
+  { id: 'rocks',   l: 'Rocks'   },
+  { id: 'tall',    l: 'Tall'    },
+  { id: 'mug',     l: 'Mug'     },
 ];
 
 // Shelf categories & items

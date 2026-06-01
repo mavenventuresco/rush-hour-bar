@@ -858,14 +858,7 @@ function _drawGlassRack(L, G, frame) {
     // Glass illustration
     drawGlassShape(cx, cy, gl.id, [], false, 0.88);
 
-    // Label — two-line for longer names
-    const words = gl.l.split(' ');
-    if (words.length === 2) {
-      txt(words[0], cx, cardTop+cardH-13, sel?'#f5c842':'#7060a0', 8);
-      txt(words[1], cx, cardTop+cardH-4,  sel?'#f5c842':'#7060a0', 8);
-    } else {
-      txt(gl.l, cx, cardTop+cardH-6, sel?'#f5c842':'#7060a0', 9);
-    }
+    txt(gl.l, cx, cardTop+cardH-7, sel?'#f5c842':'#7060a0', 10);
   });
 }
 

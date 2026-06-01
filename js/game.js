@@ -368,11 +368,12 @@ function openRecipe(c) {
     document.body.appendChild(el);
   }
   document.getElementById('rtitle').textContent = d.name;
-  let h = `<div class="rrow"><span class="rico">🫙</span><span>${gl.l} Glass</span></div>`;
+  let h = `<div class="rrow"><span class="rlabel">Glass</span><span>${gl.l}</span></div>`;
   d.steps.forEach(s => {
-    h += `<div class="rrow"><span class="rico">${s.t === 'ice' ? '🧊' : s.t === 'tap' ? '🍺' : '🍾'}</span><span>${s.l}</span></div>`;
+    const lbl = s.t === 'ice' ? 'Ice' : s.t === 'tap' ? 'Tap' : 'Add';
+    h += `<div class="rrow"><span class="rlabel">${lbl}</span><span>${s.l}</span></div>`;
   });
-  if (d.mix) h += `<div class="rrow"><span class="rico">🔀</span><span>Shake / Mix</span></div>`;
+  if (d.mix) h += `<div class="rrow"><span class="rlabel shake">Shake</span><span>Mix / Shake</span></div>`;
   document.getElementById('rsteps').innerHTML = h;
   el.classList.add('open');
 }
@@ -384,8 +385,8 @@ function buildMenu() {
     const gl   = GL.find(g => g.id === d.g);
     const card = document.createElement('div'); card.className = 'mc';
     const steps = d.steps.map(s => `<span class="tag tl">${s.l}</span>`).join(' ');
-    const mx = d.mix ? `<div class="mr">🔀 <span class="tag tg">Shake</span></div>` : '';
-    card.innerHTML = `<div class="dn">${d.name}</div><div class="mr">🫙 <span class="tag tm">${gl.l}</span></div><div class="mr">${steps}</div>${mx}`;
+    const mx = d.mix ? `<div class="mr"><span class="tag tg">Shake</span></div>` : '';
+    card.innerHTML = `<div class="dn">${d.name}</div><div class="mr"><span class="tag tm">${gl.l}</span></div><div class="mr">${steps}</div>${mx}`;
     mg.appendChild(card);
   });
 }

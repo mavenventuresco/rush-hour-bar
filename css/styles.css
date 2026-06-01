@@ -115,11 +115,19 @@ canvas {
 /* Recipe rows */
 .rrow {
   display: flex; align-items: center; gap: 10px;
-  padding: 7px 0;
+  padding: 6px 0;
   border-bottom: 1px solid #1a1030;
-  font-size: 13px; font-weight: 600; color: #d0b8ff;
+  font-size: 13px; font-weight: 500; color: #d0b8ff;
 }
-.rico { font-size: 18px; width: 26px; text-align: center; }
+.rlabel {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: #1e1040; color: #8878c0;
+  border: 1px solid #3a2868;
+  border-radius: 5px; padding: 2px 7px;
+  min-width: 40px; text-align: center; flex-shrink: 0;
+}
+.rlabel.shake { background: #0a1e10; color: #6af0a4; border-color: #1a4a22; }
 
 /* Menu grid */
 .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 7px; margin-bottom: 12px; }

@@ -3,8 +3,8 @@ export const GL = [
   { id: 'wine',    l: 'Wine Glass' },
   { id: 'martini', l: 'Martini'   },
   { id: 'shot',    l: 'Shot Glass' },
-  { id: 'rocks',   l: 'Tumbler'   },
-  { id: 'tall',    l: 'Highball'  },
+  { id: 'rocks',   l: 'Rocks Glass' },
+  { id: 'tall',    l: 'Tall Glass' },
   { id: 'mug',     l: 'Beer Mug'  },
 ];
 
@@ -42,8 +42,8 @@ export const SHELVES = {
 
 // Drink recipes
 export const DRINKS = [
-  { name: 'Draft Lager',      g: 'mug',     steps: [{ t: 'tap', id: 'light', l: 'Light Tap' }], mix: false },
-  { name: 'Dark Ale',         g: 'mug',     steps: [{ t: 'tap', id: 'dark',  l: 'Dark Tap'  }], mix: false },
+  { name: 'Lite Beer',        g: 'mug',     steps: [{ t: 'tap', id: 'light', l: 'Lite Beer' }], mix: false },
+  { name: 'Dark Beer',        g: 'mug',     steps: [{ t: 'tap', id: 'dark',  l: 'Dark Beer' }], mix: false },
   { name: 'Red Wine',         g: 'wine',    steps: [{ t: 's', id: 'red_wine',  l: 'Red Wine'  }], mix: false },
   { name: 'White Wine',       g: 'wine',    steps: [{ t: 's', id: 'white_wine',l: 'White Wine'}], mix: false },
   { name: 'Rosé',             g: 'wine',    steps: [{ t: 's', id: 'rose',      l: 'Rosé'      }], mix: false },

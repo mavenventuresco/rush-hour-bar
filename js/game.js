@@ -344,7 +344,7 @@ function _tryServe(px, py) {
   G.stools.forEach((c, i) => {
     if (!c || c.state !== 'ordering' || served) return;
     const cx = seatX(i), cy = L.barY + L.barH - 62;
-    if (Math.abs(px - cx) > 64 || py < cy - 50 || py > cy + 80) return;
+    if (Math.abs(px - cx) > 32 || py < cy - 25 || py > cy + 40) return;
     const d = c.drink;
     if (dragging.glass !== d.g) {
       flash('Wrong glass! Need: ' + GL.find(g => g.id === d.g).l);

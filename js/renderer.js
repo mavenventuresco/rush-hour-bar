@@ -712,15 +712,17 @@ function _drawShaker(cx, cy) {
 
 // ─── SHARED WORKSTATION GEOMETRY ─────────────────────────────────────────────
 export function wsLayout() {
-  // Proportional sections — always fill the screen width on any device
-  const usable = W - 16;
+  // Sections span the same width as the glass rack so taps/shaker
+  // sit directly under the first and last glass cards
+  const rackIW = Math.min(96, (W - 16) / 6);
+  const usable = rackIW * 6;
+  const ox     = Math.round((W - usable) / 2);
   const GAP    = Math.max(2, Math.round(usable * 0.008));
   const TAP_W  = Math.min(130, Math.round(usable * 0.22));
   const ICE_W  = Math.min(58,  Math.round(usable * 0.10));
   const SINK_W = Math.min(90,  Math.round(usable * 0.16));
   const JIG_W  = Math.min(78,  Math.round(usable * 0.13));
   const MX_W   = usable - TAP_W - ICE_W - SINK_W - JIG_W - GAP * 4;
-  const ox     = 8;
   return [
     { id:'taps', x:ox,                               w:TAP_W,  label:'TAPS'          },
     { id:'ice',  x:ox+TAP_W+GAP,                     w:ICE_W,  label:'ICE'            },
@@ -936,28 +938,7 @@ function _drawBar(L, G, frame, dragging) {
     const cx = seatX(i);
     const cy = L.barY + L.barH - 62;
 
-    // Stool pole
-    const poleG = X.createLinearGradient(cx-3,0,cx+3,0);
-    poleG.addColorStop(0,'#2a1840'); poleG.addColorStop(0.5,'#4a2a6a'); poleG.addColorStop(1,'#2a1840');
-    X.fillStyle=poleG; X.fillRect(cx-3,cy+44,6,24);
-
-    // Stool seat — 3D ellipse look
-    X.save();
-    X.beginPath(); X.ellipse(cx,cy+43,18,7,0,0,Math.PI*2);
-    const seatG=X.createRadialGradient(cx-4,cy+40,1,cx,cy+43,18);
-    seatG.addColorStop(0,'#7a52a0'); seatG.addColorStop(1,'#4a2870');
-    X.fillStyle=seatG; X.fill();
-    X.strokeStyle='#8a60b8'; X.lineWidth=1.2; X.stroke(); X.restore();
-    // Seat bottom shadow
-    X.save(); X.globalAlpha=0.3;
-    X.beginPath(); X.ellipse(cx,cy+47,18,5,0,0,Math.PI*2);
-    X.fillStyle='#000'; X.fill(); X.restore();
-
-    if (!c) {
-      X.save(); X.globalAlpha=0.14;
-      txt('open',cx,cy+43,'#9070c0',8); X.restore();
-      return;
-    }
+    if (!c) return;
 
     // Order bubble
     if (c.state==='ordering') {

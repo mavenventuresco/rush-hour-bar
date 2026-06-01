@@ -41,7 +41,7 @@ function startGame() {
   document.getElementById('overlay').style.display = 'none';
   initAudio();
   G = {
-    running: true,
+    running: true, paused: false,
     money: 0, score: 0, combo: 0, served: 0,
     stools: new Array(SEATS).fill(null),
     queue: [],
@@ -104,6 +104,7 @@ function _newBurstTarget() {
 }
 
 function updateCustomers() {
+  if (G.paused) return; // hard stop — timers never tick while paused
   // Spawn into queue with randomised interval
   G.spawnTimer++;
   if (G.spawnTimer >= G.spawnInterval) {

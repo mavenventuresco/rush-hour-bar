@@ -39,93 +39,252 @@ function liquidColor(ings) {
 // ─── GLASS SHAPES ────────────────────────────────────────────────────────────
 function drawGlassShape(x, y, type, ings, finished, sc = 1) {
   X.save(); X.translate(x, y); X.scale(sc, sc);
-  const stroke = finished ? '#f5c842' : '#c0b0e0';
-  const lw     = finished ? 2.5 : Math.max(1.5, 2 / sc);
-  X.strokeStyle = stroke; X.lineWidth = lw;
-  if (finished) { X.shadowBlur = 18; X.shadowColor = '#f5c84466'; }
+  X.lineCap = 'round'; X.lineJoin = 'round';
 
-  const liq = liquidColor(ings);
+  const stroke = finished ? '#f5c842' : '#c8bce8';
+  const lw = Math.max(1.4, 2 / sc);
+  X.strokeStyle = stroke; X.lineWidth = lw;
+  if (finished) { X.shadowBlur = 20; X.shadowColor = '#f5c84455'; }
+
+  const liq    = liquidColor(ings);
   const hasIce = ings.includes('ice');
 
+  // Shared glass-body highlight helper (left-side sheen)
+  function _glassSheen(path) {
+    X.save(); X.globalAlpha = 0.1; X.fillStyle = '#ffffff';
+    path(); X.fill(); X.restore();
+  }
+
   switch (type) {
+
     case 'wine': {
+      // Liquid fill
+      if (liq) {
+        X.save(); X.globalAlpha = 0.75;
+        X.beginPath();
+        X.moveTo(-14,2); X.bezierCurveTo(-16,8,-10,17,-3,20);
+        X.lineTo(3,20); X.bezierCurveTo(10,17,16,8,14,2); X.closePath();
+        X.fillStyle = liq; X.fill(); X.restore();
+      }
+      // Outline (drawn on top so it's always sharp)
       X.beginPath();
-      X.moveTo(-10,-24); X.bezierCurveTo(-16,-20,-18,4,-7,18);
-      X.lineTo(-3,20); X.lineTo(-3,28); X.lineTo(-9,28); X.lineTo(-9,30);
-      X.lineTo(9,30); X.lineTo(9,28); X.lineTo(3,28); X.lineTo(3,20);
-      X.bezierCurveTo(7,18,16,4,10,-24); X.closePath(); X.stroke();
-      if (liq) {
-        X.save(); X.globalAlpha=.72;
-        X.beginPath(); X.moveTo(-8,0); X.bezierCurveTo(-14,6,-6,16,-3,20); X.lineTo(3,20); X.bezierCurveTo(6,16,14,6,8,0); X.closePath();
-        X.fillStyle=liq; X.fill(); X.restore();
-      }
+      X.moveTo(-10,-24);
+      X.bezierCurveTo(-18,-22,-20,0,-12,14);
+      X.bezierCurveTo(-9,18,-5,20,-3,20);
+      X.lineTo(-3,27); X.lineTo(-9,27); X.lineTo(-9,30); X.lineTo(9,30);
+      X.lineTo(9,27); X.lineTo(3,27); X.lineTo(3,20);
+      X.bezierCurveTo(5,20,9,18,12,14);
+      X.bezierCurveTo(20,0,18,-22,10,-24); X.closePath(); X.stroke();
+      // Sheen
+      _glassSheen(() => {
+        X.moveTo(-9,-22); X.bezierCurveTo(-15,-18,-17,-4,-12,10);
+        X.lineTo(-8,10); X.bezierCurveTo(-12,-2,-10,-16,-6,-22); X.closePath();
+      });
       break;
     }
+
     case 'martini': {
-      X.beginPath(); X.moveTo(-18,-22); X.lineTo(0,12); X.lineTo(18,-22); X.closePath(); X.stroke();
-      X.beginPath(); X.moveTo(0,12); X.lineTo(0,26); X.moveTo(-9,26); X.lineTo(9,26); X.stroke();
       if (liq) {
-        X.save(); X.globalAlpha=.72;
-        X.beginPath(); X.moveTo(-12,-8); X.lineTo(0,12); X.lineTo(12,-8); X.closePath();
-        X.fillStyle=liq; X.fill(); X.restore();
+        X.save(); X.globalAlpha = 0.75;
+        X.beginPath(); X.moveTo(-14,-6); X.lineTo(0,10); X.lineTo(14,-6); X.closePath();
+        X.fillStyle = liq; X.fill(); X.restore();
       }
+      // Wide rim
+      X.beginPath(); X.moveTo(-20,-24); X.lineTo(0,10); X.lineTo(20,-24); X.closePath(); X.stroke();
+      // Stem + foot
+      X.beginPath(); X.moveTo(0,10); X.lineTo(0,26);
+      X.moveTo(-8,26); X.lineTo(8,26); X.stroke();
+      // Rim line
+      X.beginPath(); X.moveTo(-20,-24); X.lineTo(20,-24); X.stroke();
+      _glassSheen(() => {
+        X.moveTo(-18,-24); X.lineTo(-4,8); X.lineTo(-1,8); X.lineTo(-14,-24); X.closePath();
+      });
       break;
     }
+
     case 'shot': {
-      X.beginPath(); X.moveTo(-6,-16); X.lineTo(-7,16); X.lineTo(7,16); X.lineTo(6,-16); X.closePath(); X.stroke();
       if (liq) {
-        X.save(); X.globalAlpha=.72;
-        X.beginPath(); X.moveTo(-5,0); X.lineTo(-6,13); X.lineTo(6,13); X.lineTo(5,0); X.closePath();
-        X.fillStyle=liq; X.fill(); X.restore();
+        X.save(); X.globalAlpha = 0.78;
+        X.beginPath(); X.moveTo(-5,-2); X.lineTo(-6,13); X.lineTo(6,13); X.lineTo(5,-2); X.closePath();
+        X.fillStyle = liq; X.fill(); X.restore();
       }
+      // Thick-walled cylinder with slight taper
+      X.beginPath();
+      X.moveTo(-7,-18); X.lineTo(-8,14); X.lineTo(8,14); X.lineTo(7,-18); X.closePath(); X.stroke();
+      // Rim highlight
+      X.beginPath(); X.moveTo(-7,-18); X.lineTo(7,-18); X.stroke();
+      // Thick base
+      X.save(); X.globalAlpha=0.4;
+      X.beginPath(); X.moveTo(-8,10); X.lineTo(-8,14); X.lineTo(8,14); X.lineTo(8,10); X.closePath();
+      X.fillStyle='#b0a0d8'; X.fill(); X.restore();
+      _glassSheen(() => { X.moveTo(-6,-16); X.lineTo(-7,12); X.lineTo(-4,12); X.lineTo(-3,-16); X.closePath(); });
       break;
     }
+
     case 'rocks': {
-      X.beginPath(); X.moveTo(-15,-10); X.lineTo(-16,16); X.lineTo(16,16); X.lineTo(15,-10); X.closePath(); X.stroke();
       if (liq) {
-        X.save(); X.globalAlpha=.72;
-        X.beginPath(); X.moveTo(-13,2); X.lineTo(-14,14); X.lineTo(14,14); X.lineTo(13,2); X.closePath();
-        X.fillStyle=liq; X.fill();
-        if (hasIce) { X.globalAlpha=.5; rr(-9,3,6,6,1,'#cceeff',null); rr(3,5,5,5,1,'#cceeff',null); }
-        X.restore();
-      }
-      break;
-    }
-    case 'tall': {
-      X.beginPath(); X.moveTo(-9,-26); X.lineTo(-10,24); X.lineTo(10,24); X.lineTo(9,-26); X.closePath(); X.stroke();
-      if (liq) {
-        X.save(); X.globalAlpha=.72;
-        X.beginPath(); X.moveTo(-8,-4); X.lineTo(-9,22); X.lineTo(9,22); X.lineTo(8,-4); X.closePath();
-        X.fillStyle=liq; X.fill();
-        if (hasIce) { X.globalAlpha=.45; rr(-6,-2,5,6,1,'#cceeff',null); }
-        X.restore();
-      }
-      break;
-    }
-    case 'mug': {
-      X.beginPath(); X.moveTo(-13,-20); X.lineTo(-14,20); X.lineTo(12,20); X.lineTo(11,-20); X.closePath(); X.stroke();
-      X.beginPath(); X.moveTo(11,-8); X.bezierCurveTo(24,-8,24,12,11,12); X.stroke();
-      if (liq) {
-        X.save(); X.globalAlpha=.75;
-        X.beginPath(); X.moveTo(-11,-2); X.lineTo(-12,18); X.lineTo(10,18); X.lineTo(9,-2); X.closePath();
-        X.fillStyle=liq; X.fill();
-        if (ings.some(i=>['light','dark'].includes(i))) {
-          X.fillStyle='#ffffffcc';
-          X.beginPath(); X.ellipse(-1,-2,11,5,0,0,Math.PI*2); X.fill();
+        X.save(); X.globalAlpha = 0.75;
+        X.beginPath(); X.moveTo(-14,0); X.lineTo(-15,15); X.lineTo(15,15); X.lineTo(14,0); X.closePath();
+        X.fillStyle = liq; X.fill();
+        if (hasIce) {
+          X.globalAlpha = 0.55;
+          rr(-9,2,7,7,2,'#cceeff',null); rr(2,4,6,6,2,'#ddeeff',null);
         }
         X.restore();
       }
+      // Squat tumbler — slight taper
+      X.beginPath();
+      X.moveTo(-15,-12); X.lineTo(-16,16); X.lineTo(16,16); X.lineTo(15,-12); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-15,-12); X.lineTo(15,-12); X.stroke(); // rim
+      // Base thickness
+      X.save(); X.globalAlpha=0.35;
+      X.beginPath(); X.moveTo(-16,12); X.lineTo(-16,16); X.lineTo(16,16); X.lineTo(16,12); X.closePath();
+      X.fillStyle='#b0a0d8'; X.fill(); X.restore();
+      _glassSheen(() => { X.moveTo(-14,-10); X.lineTo(-15,14); X.lineTo(-10,14); X.lineTo(-9,-10); X.closePath(); });
+      break;
+    }
+
+    case 'tall': {
+      if (liq) {
+        X.save(); X.globalAlpha = 0.75;
+        X.beginPath(); X.moveTo(-8,-6); X.lineTo(-9,22); X.lineTo(9,22); X.lineTo(8,-6); X.closePath();
+        X.fillStyle = liq; X.fill();
+        if (hasIce) { X.globalAlpha=0.5; rr(-6,-4,5,7,2,'#cceeff',null); }
+        X.restore();
+      }
+      // Tall straight cylinder
+      X.beginPath();
+      X.moveTo(-9,-28); X.lineTo(-10,24); X.lineTo(10,24); X.lineTo(9,-28); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-9,-28); X.lineTo(9,-28); X.stroke(); // rim
+      X.save(); X.globalAlpha=0.35;
+      X.beginPath(); X.moveTo(-10,20); X.lineTo(-10,24); X.lineTo(10,24); X.lineTo(10,20); X.closePath();
+      X.fillStyle='#b0a0d8'; X.fill(); X.restore();
+      _glassSheen(() => { X.moveTo(-8,-26); X.lineTo(-9,22); X.lineTo(-5,22); X.lineTo(-4,-26); X.closePath(); });
+      break;
+    }
+
+    case 'mug': {
+      if (liq) {
+        X.save(); X.globalAlpha = 0.78;
+        X.beginPath(); X.moveTo(-11,-4); X.lineTo(-12,18); X.lineTo(10,18); X.lineTo(9,-4); X.closePath();
+        X.fillStyle = liq; X.fill();
+        if (ings.some(i=>['light','dark'].includes(i))) {
+          X.fillStyle='#ffffffcc';
+          X.beginPath(); X.ellipse(-1,-4,10,4,0,0,Math.PI*2); X.fill();
+        }
+        X.restore();
+      }
+      // Barrel body with subtle ring
+      X.beginPath();
+      X.moveTo(-13,-22); X.lineTo(-14,20); X.lineTo(12,20); X.lineTo(11,-22); X.closePath(); X.stroke();
+      X.beginPath(); X.moveTo(-13,-22); X.lineTo(11,-22); X.stroke(); // rim
+      // Barrel ring mid-way
+      X.save(); X.globalAlpha=0.3; X.strokeStyle=stroke; X.lineWidth=lw*0.7;
+      X.beginPath(); X.moveTo(-13,-2); X.lineTo(11,-2); X.stroke(); X.restore();
+      // D-handle — thick, rounded
+      X.beginPath();
+      X.moveTo(11,-10);
+      X.bezierCurveTo(26,-10,26,0,22,6);
+      X.bezierCurveTo(20,10,16,12,11,12); X.stroke();
+      // Handle inner detail
+      X.save(); X.globalAlpha=0.3; X.lineWidth=lw*0.6;
+      X.beginPath();
+      X.moveTo(11,-7); X.bezierCurveTo(22,-7,22,0,18,5); X.bezierCurveTo(16,8,13,10,11,10); X.stroke();
+      X.restore();
+      _glassSheen(() => { X.moveTo(-12,-20); X.lineTo(-13,18); X.lineTo(-8,18); X.lineTo(-7,-20); X.closePath(); });
       break;
     }
   }
-  X.shadowBlur=0;
-  if (finished) {
+
+  X.shadowBlur = 0;
+
+  // ── Finished-drink garnish ──
+  if (finished && ings.length) {
+    _drawGarnish(type, ings);
+    // Gentle sparkle dots
     X.save(); X.fillStyle='#f5c842';
-    [[14,-22],[-14,-18],[0,-30]].forEach(([dx,dy])=>{ X.beginPath(); X.arc(dx,dy,2.5,0,Math.PI*2); X.fill(); });
+    [[16,-20],[-15,-16],[1,-32]].forEach(([dx,dy])=>{
+      X.beginPath(); X.arc(dx,dy,2.2,0,Math.PI*2); X.fill();
+    });
     X.restore();
   }
+
   X.restore();
 }
+
+// Drink-specific garnish drawn on a finished glass
+function _drawGarnish(type, ings) {
+  const hasLime     = ings.includes('lime');
+  const hasOrange   = ings.includes('orange');
+  const hasLemon    = ings.includes('lemon');
+  const hasBeer     = ings.some(i=>['light','dark'].includes(i));
+  const hasCranberry= ings.includes('cranberry');
+  const hasGrenadine= ings.includes('grenadine');
+
+  if (type === 'mug' && hasBeer) {
+    // Foam bubbles peeking over rim
+    X.save(); X.globalAlpha=0.9;
+    X.fillStyle='#fffff0';
+    [-8,-3,3,8].forEach(bx=>{
+      X.beginPath(); X.arc(bx,-24,3.5,0,Math.PI*2); X.fill();
+    });
+    X.restore();
+    return;
+  }
+
+  if (type === 'tall' && hasGrenadine && hasOrange) {
+    // Tequila Sunrise gradient overlay
+    X.save(); X.globalAlpha=0.4;
+    const sr=X.createLinearGradient(0,-6,0,22);
+    sr.addColorStop(0,'#ff8800'); sr.addColorStop(1,'#cc0033');
+    X.beginPath(); X.moveTo(-8,-6); X.lineTo(-9,22); X.lineTo(9,22); X.lineTo(8,-6); X.closePath();
+    X.fillStyle=sr; X.fill(); X.restore();
+  }
+
+  // Citrus wheel on rim
+  if (hasLime || hasOrange || hasLemon) {
+    const col = hasLime?'#44cc22':hasLemon?'#ffdd00':'#ff8800';
+    const rimX = type==='wine'?14:type==='tall'?11:type==='mug'?13:12;
+    const rimY = type==='wine'?-20:type==='tall'?-24:type==='rocks'?-10:-20;
+    X.save();
+    X.translate(rimX, rimY);
+    // Wheel circle
+    X.beginPath(); X.arc(0,0,5,0,Math.PI*2);
+    X.fillStyle=col; X.fill();
+    X.strokeStyle=_dk(col,0.7); X.lineWidth=1; X.stroke();
+    // Segments
+    X.save(); X.globalAlpha=0.5; X.strokeStyle='#fff'; X.lineWidth=0.8;
+    for(let s=0;s<6;s++){
+      const a=s*Math.PI/3;
+      X.beginPath(); X.moveTo(0,0); X.lineTo(Math.cos(a)*5,Math.sin(a)*5); X.stroke();
+    }
+    X.restore();
+    // Rind arc
+    X.beginPath(); X.arc(0,0,5,0,Math.PI*2);
+    X.strokeStyle=_dk(col,0.6); X.lineWidth=1.5; X.stroke();
+    X.restore();
+  }
+
+  if (type === 'martini') {
+    // Olive on a cocktail pick
+    X.save();
+    X.strokeStyle='#c8b060'; X.lineWidth=1;
+    X.beginPath(); X.moveTo(-6,-20); X.lineTo(6,-10); X.stroke();
+    X.beginPath(); X.arc(6,-10,3.5,0,Math.PI*2);
+    X.fillStyle='#4a7a20'; X.fill(); X.strokeStyle='#2a4a10'; X.lineWidth=1; X.stroke();
+    // Pimento dot
+    X.beginPath(); X.arc(6,-10,1.5,0,Math.PI*2); X.fillStyle='#dd3322'; X.fill();
+    X.restore();
+  }
+
+  if (type === 'rocks' && ings.some(i=>['bourbon','scotch'].includes(i))) {
+    // Orange twist curl
+    X.save(); X.strokeStyle='#ff8800'; X.lineWidth=1.5; X.lineCap='round';
+    X.beginPath(); X.moveTo(8,-14); X.bezierCurveTo(14,-18,16,-10,12,-8); X.stroke();
+    X.restore();
+  }
+}
+
 
 // ─── CHARACTER DRAWING ───────────────────────────────────────────────────────
 function drawPerson(x, y, skin, cloth, hair, face, scale = 1, hairStyle = 'wavy', eyeStyle = 'round') {
@@ -424,18 +583,43 @@ function _drawFace(face, eyeStyle, skin) {
 // ─── COCKTAIL SHAKER ─────────────────────────────────────────────────────────
 function _drawShaker(cx, cy) {
   X.save(); X.translate(cx, cy);
+  X.lineCap='round'; X.lineJoin='round';
+
+  const chrome=(x0,y0,x1,y1)=>{
+    const g=X.createLinearGradient(x0,y0,x1,y1);
+    g.addColorStop(0,'#606474'); g.addColorStop(0.3,'#c8ccd8');
+    g.addColorStop(0.7,'#a0a4b4'); g.addColorStop(1,'#484c5c'); return g;
+  };
+
+  // Main tin body — smooth tapered cylinder
   X.beginPath();
-  X.moveTo(-11,18); X.lineTo(-12,-4); X.lineTo(-8,-13); X.lineTo(-8,-20); X.lineTo(8,-20); X.lineTo(8,-13); X.lineTo(12,-4); X.lineTo(11,18); X.closePath();
-  const bg = X.createLinearGradient(-12,0,12,0);
-  bg.addColorStop(0,'#a0a8c0'); bg.addColorStop(0.3,'#dce0f0'); bg.addColorStop(0.7,'#c0c8dc'); bg.addColorStop(1,'#8890a8');
-  X.fillStyle=bg; X.fill(); X.strokeStyle='#6870a0'; X.lineWidth=1.8; X.stroke();
-  X.beginPath(); X.roundRect(-8,-28,16,10,3);
-  const cg=X.createLinearGradient(-8,0,8,0); cg.addColorStop(0,'#b0b8d0'); cg.addColorStop(0.5,'#e0e4f4'); cg.addColorStop(1,'#9098b8');
-  X.fillStyle=cg; X.fill(); X.strokeStyle='#6870a0'; X.lineWidth=1.5; X.stroke();
-  X.beginPath(); X.roundRect(-5,-34,10,8,3); X.fillStyle='#d0d8f0'; X.fill(); X.strokeStyle='#8088b0'; X.lineWidth=1.2; X.stroke();
-  X.save(); X.globalAlpha=0.35; X.fillStyle='#fff';
-  X.beginPath(); X.moveTo(-10,16); X.lineTo(-11,-3); X.lineTo(-7,-3); X.lineTo(-6,16); X.closePath(); X.fill();
-  X.globalAlpha=0.28; X.fillRect(-7,-27,4,8); X.restore();
+  X.moveTo(-11,20);
+  X.bezierCurveTo(-13,14,-13,4,-10,-4);
+  X.lineTo(-8,-14); X.lineTo(-8,-21); X.lineTo(8,-21); X.lineTo(8,-14); X.lineTo(10,-4);
+  X.bezierCurveTo(13,4,13,14,11,20); X.closePath();
+  X.fillStyle=chrome(-13,0,13,0); X.fill(); X.strokeStyle='#50546a'; X.lineWidth=1.8; X.stroke();
+  // Shoulder seam ring
+  X.save(); X.globalAlpha=0.5; X.strokeStyle='#707488'; X.lineWidth=1.2;
+  X.beginPath(); X.moveTo(-10,-4); X.lineTo(10,-4); X.stroke(); X.restore();
+
+  // Strainer cap — slightly narrower, sits on top
+  X.beginPath(); X.roundRect(-8,-31,16,12,4);
+  X.fillStyle=chrome(-8,0,8,0); X.fill(); X.strokeStyle='#50546a'; X.lineWidth=1.5; X.stroke();
+  // Cap seam line
+  X.save(); X.globalAlpha=0.4; X.strokeStyle='#888'; X.lineWidth=0.8;
+  X.beginPath(); X.moveTo(-8,-25); X.lineTo(8,-25); X.stroke(); X.restore();
+
+  // Lid — small flat cap
+  X.beginPath(); X.roundRect(-5,-37,10,8,3);
+  X.fillStyle=chrome(-5,0,5,0); X.fill(); X.strokeStyle='#50546a'; X.lineWidth=1.2; X.stroke();
+
+  // Shine strip on body
+  X.save(); X.globalAlpha=0.32; X.fillStyle='#fff';
+  X.beginPath(); X.moveTo(-10,18); X.bezierCurveTo(-12,10,-12,2,-9,-3);
+  X.lineTo(-6,-3); X.bezierCurveTo(-8,4,-8,12,-6,18); X.closePath(); X.fill();
+  // Shine on cap
+  X.globalAlpha=0.25; X.fillRect(-7,-29,4,8); X.restore();
+
   X.restore();
 }
 
@@ -697,6 +881,146 @@ function _drawBar(L, G, frame, dragging) {
   });
 }
 
+// ─── BEER TAP ────────────────────────────────────────────────────────────────
+function _drawBeerTap(cx, tapY, wsY, wsH, color, label) {
+  const chrome = (x0,y0,x1,y1) => {
+    const g=X.createLinearGradient(x0,y0,x1,y1);
+    g.addColorStop(0,'#6a6e80'); g.addColorStop(0.35,'#c8ccd8');
+    g.addColorStop(0.65,'#a0a4b4'); g.addColorStop(1,'#50546a'); return g;
+  };
+
+  // Base plate
+  const bp = X.createLinearGradient(cx-14,0,cx+14,0);
+  bp.addColorStop(0,'#404454'); bp.addColorStop(0.5,'#7880a0'); bp.addColorStop(1,'#404454');
+  rr(cx-13, tapY+22, 26, 6, 3, bp, '#2a2e3e', 1.5);
+
+  // Column — chrome cylinder
+  const col = chrome(cx-5,0,cx+5,0);
+  rr(cx-5, tapY-6, 10, 30, 3, col, '#40445a', 1.5);
+  // Column shine
+  X.save(); X.globalAlpha=0.35; X.fillStyle='#fff';
+  rr(cx-4, tapY-4, 3, 26, 2, '#fff', null); X.restore();
+
+  // Handle — pill-shaped, colour-coded
+  const hg = X.createLinearGradient(cx-9,tapY-28,cx+9,tapY-4);
+  hg.addColorStop(0,_dk(color,1.3)); hg.addColorStop(0.5,color); hg.addColorStop(1,_dk(color,0.7));
+  X.beginPath(); X.roundRect(cx-9, tapY-28, 18, 24, 9);
+  X.fillStyle=hg; X.fill(); X.strokeStyle=_dk(color,0.6); X.lineWidth=1.5; X.stroke();
+  // Handle grip lines
+  X.save(); X.globalAlpha=0.22; X.strokeStyle='#000'; X.lineWidth=1;
+  for(let i=0;i<3;i++){ X.beginPath(); X.moveTo(cx-7,tapY-20+i*6); X.lineTo(cx+7,tapY-20+i*6); X.stroke(); }
+  X.restore();
+  // Handle shine
+  X.save(); X.globalAlpha=0.3; X.fillStyle='#fff';
+  X.beginPath(); X.roundRect(cx-7, tapY-26, 5, 20, 4); X.fill(); X.restore();
+
+  // Spout — curved downward
+  X.save(); X.lineCap='round';
+  X.strokeStyle=chrome(cx,0,cx-14,0); X.lineWidth=4;
+  X.beginPath(); X.moveTo(cx,tapY+24); X.quadraticCurveTo(cx-4,tapY+32,cx-10,tapY+36); X.stroke();
+  // Inner spout
+  X.strokeStyle=_dk(color,0.8); X.lineWidth=1.5;
+  X.beginPath(); X.moveTo(cx,tapY+24); X.quadraticCurveTo(cx-4,tapY+32,cx-10,tapY+36); X.stroke();
+  X.restore();
+
+  // Tap knob where handle meets column
+  X.beginPath(); X.arc(cx,tapY-4,5,0,Math.PI*2);
+  X.fillStyle=chrome(cx-5,0,cx+5,0); X.fill(); X.strokeStyle='#40445a'; X.lineWidth=1.2; X.stroke();
+
+  txt(label, cx, wsY+wsH-7, color, 7);
+}
+
+// ─── ICE MACHINE ─────────────────────────────────────────────────────────────
+function _drawIceMachine(cx, tapY, wsY, wsH) {
+  // Cabinet body
+  const bg=X.createLinearGradient(cx-18,wsY+8,cx+18,wsY+8);
+  bg.addColorStop(0,'#182838'); bg.addColorStop(0.5,'#223448'); bg.addColorStop(1,'#182838');
+  rr(cx-18, wsY+8, 36, wsH-20, 6, bg, '#3a6888', 2);
+
+  // Ice window / hopper
+  const win=X.createLinearGradient(cx-12,wsY+12,cx+12,wsY+42);
+  win.addColorStop(0,'#1a3a54'); win.addColorStop(1,'#0e2030');
+  rr(cx-12, wsY+12, 24, 26, 4, win, '#4a88aa', 1.5);
+
+  // Ice cubes inside window
+  const icePositions=[[-7,-1],[-1,-5],[5,-2],[-4,5],[3,6]];
+  icePositions.forEach(([dx,dy])=>{
+    const ix=cx+dx, iy=wsY+27+dy;
+    X.beginPath(); X.roundRect(ix,iy,6,5,1);
+    const ig=X.createLinearGradient(ix,iy,ix+6,iy+5);
+    ig.addColorStop(0,'#c8e8f8'); ig.addColorStop(1,'#88c4e0');
+    X.fillStyle=ig; X.fill(); X.strokeStyle='#60a8cc'; X.lineWidth=0.8; X.stroke();
+    // Cube highlight
+    X.save(); X.globalAlpha=0.55; X.fillStyle='#fff';
+    X.beginPath(); X.roundRect(ix,iy,3,2,0.5); X.fill(); X.restore();
+  });
+
+  // Dispense chute at bottom
+  rr(cx-7, wsY+wsH-16, 14, 8, 2, '#111a24', '#2a5060', 1.2);
+  // Dispense button
+  X.beginPath(); X.arc(cx, wsY+14, 4, 0, Math.PI*2);
+  X.fillStyle='#44aadd'; X.fill(); X.strokeStyle='#2288bb'; X.lineWidth=1; X.stroke();
+  X.save(); X.globalAlpha=0.5; X.fillStyle='#fff';
+  X.beginPath(); X.arc(cx-1,wsY+13,1.5,0,Math.PI*2); X.fill(); X.restore();
+
+  // Side vents
+  X.save(); X.globalAlpha=0.3; X.strokeStyle='#3a6888'; X.lineWidth=0.8;
+  [2,5,8].forEach(vx=>{ X.beginPath(); X.moveTo(cx+12,wsY+12+vx*3); X.lineTo(cx+17,wsY+12+vx*3); X.stroke(); });
+  X.restore();
+
+  txt('ICE', cx, wsY+wsH-7, '#88ccee', 7);
+}
+
+// ─── SINK ────────────────────────────────────────────────────────────────────
+function _drawSink(cx, tapY, wsY, wsH) {
+  const chrome=(x0,y0,x1,y1)=>{
+    const g=X.createLinearGradient(x0,y0,x1,y1);
+    g.addColorStop(0,'#606474'); g.addColorStop(0.4,'#b8bcc8'); g.addColorStop(1,'#484c5c'); return g;
+  };
+
+  // Basin outer rim
+  rr(cx-22, tapY-2, 44, 26, 4, chrome(cx-22,0,cx+22,0), '#38404e', 1.5);
+  // Basin inner (dark water pit)
+  const basin=X.createLinearGradient(cx,tapY,cx,tapY+22);
+  basin.addColorStop(0,'#0a1820'); basin.addColorStop(1,'#050e14');
+  rr(cx-18, tapY+1, 36, 21, 3, basin, '#2a3848', 1.2);
+  // Water sheen in basin
+  X.save(); X.globalAlpha=0.12; X.fillStyle='#4488bb';
+  rr(cx-18,tapY+16,36,6,2,'#4488bb',null); X.restore();
+  // Drain circle
+  X.beginPath(); X.arc(cx, tapY+18, 4, 0, Math.PI*2);
+  X.fillStyle='#0a1218'; X.fill(); X.strokeStyle='#304050'; X.lineWidth=1; X.stroke();
+  // Drain cross
+  X.save(); X.strokeStyle='#304050'; X.lineWidth=0.8;
+  X.beginPath(); X.moveTo(cx-3,tapY+18); X.lineTo(cx+3,tapY+18); X.stroke();
+  X.beginPath(); X.moveTo(cx,tapY+15); X.lineTo(cx,tapY+21); X.stroke(); X.restore();
+
+  // Faucet arch
+  X.save(); X.lineCap='round'; X.lineJoin='round';
+  X.strokeStyle=chrome(cx-4,0,cx+4,0); X.lineWidth=5;
+  X.beginPath();
+  X.moveTo(cx-8,tapY-2);
+  X.bezierCurveTo(cx-8,tapY-16,cx+8,tapY-16,cx+8,tapY-2); X.stroke();
+  // Spout hole
+  X.beginPath(); X.arc(cx+8, tapY-2, 2.5, 0, Math.PI*2);
+  X.fillStyle='#222'; X.fill(); X.restore();
+
+  // Left handle
+  X.beginPath(); X.roundRect(cx-24,tapY-10,8,10,3);
+  const lh=X.createLinearGradient(cx-24,0,cx-16,0);
+  lh.addColorStop(0,'#404860'); lh.addColorStop(1,'#8890b0');
+  X.fillStyle=lh; X.fill(); X.strokeStyle='#30384a'; X.lineWidth=1.2; X.stroke();
+  // Right handle
+  X.beginPath(); X.roundRect(cx+16,tapY-10,8,10,3);
+  X.fillStyle=lh; X.fill(); X.strokeStyle='#30384a'; X.lineWidth=1.2; X.stroke();
+
+  // Rim shine
+  X.save(); X.globalAlpha=0.28; X.fillStyle='#fff';
+  rr(cx-22,tapY-2,44,2,1,'#fff',null); X.restore();
+
+  txt('SINK', cx, wsY+wsH-7, '#88aacc', 7);
+}
+
 // ─── WORKSTATION ─────────────────────────────────────────────────────────────
 function _drawWorkstation(L, G, frame) {
   const wsGrad=X.createLinearGradient(0,L.wsY,0,L.wsY+L.wsH);
@@ -717,34 +1041,17 @@ function _drawWorkstation(L, G, frame) {
     txt(s.label,s.x+s.w/2,L.wsY+L.wsH-6,'#3a2870',7);
   });
 
-  // Taps
+  // ── Beer Taps ──
   const tapSec=secs[0];
   const t1x=tapSec.x+tapSec.w*0.3;
   const t2x=tapSec.x+tapSec.w*0.72;
-  [{x:t1x,c:'#7090d0',l:'LITE'},{x:t2x,c:'#c09050',l:'DARK'}].forEach(t=>{
-    // Tap body with gradient
-    const tg=X.createLinearGradient(t.x-10,0,t.x+10,0);
-    tg.addColorStop(0,_dk(t.c,0.6)); tg.addColorStop(0.5,t.c); tg.addColorStop(1,_dk(t.c,0.7));
-    rr(t.x-10,L.wsY+8,20,34,4,tg,t.c,2);
-    rr(t.x-6,L.wsY+4,12,8,3,t.c,_dk(t.c,0.6),1);
-    // Spout
-    X.strokeStyle=t.c; X.lineWidth=3;
-    X.beginPath(); X.moveTo(t.x,L.wsY+42); X.quadraticCurveTo(t.x-8,L.wsY+50,t.x-10,L.wsY+54); X.stroke();
-    // Shine
-    X.save(); X.globalAlpha=0.3; X.strokeStyle='#fff'; X.lineWidth=1;
-    X.beginPath(); X.moveTo(t.x-4,L.wsY+10); X.lineTo(t.x-4,L.wsY+36); X.stroke(); X.restore();
-    txt(t.l,t.x,L.wsY+L.wsH-13,t.c,7);
+  [{x:t1x,c:'#6688cc',label:'LITE'},{x:t2x,c:'#bb8844',label:'DARK'}].forEach(t=>{
+    _drawBeerTap(t.x, tapY, L.wsY, L.wsH, t.c, t.label);
   });
 
-  // Ice machine
+  // ── Ice Machine ──
   const iceSec=secs[1];
-  const iceCx=iceSec.x+iceSec.w/2;
-  const iceBox=X.createLinearGradient(iceCx-18,L.wsY+10,iceCx+18,L.wsY+48);
-  iceBox.addColorStop(0,'#1a3050'); iceBox.addColorStop(1,'#0e1e34');
-  rr(iceCx-18,L.wsY+10,36,38,6,iceBox,'#3a7090',1.5);
-  X.save(); X.globalAlpha=0.3; X.strokeStyle='#88ccee'; X.lineWidth=1;
-  X.beginPath(); X.moveTo(iceCx-12,L.wsY+22); X.lineTo(iceCx-6,L.wsY+22); X.stroke(); X.restore();
-  txt('🧊',iceCx,tapY-2,'#aaddff',20);
+  _drawIceMachine(iceSec.x+iceSec.w/2, tapY, L.wsY, L.wsH);
 
   // Mixing station
   const mxSec=secs[2];
@@ -776,20 +1083,15 @@ function _drawWorkstation(L, G, frame) {
     X.save(); X.globalAlpha=pulse; txt('✅ DRAG TO SERVE!',mxCx,L.wsY+9,'#7dff9a',10); X.restore();
   }
 
-  // Sink
+  // ── Sink ──
   const skSec=secs[3], skCx=skSec.x+skSec.w/2;
-  const sinkG=X.createLinearGradient(skSec.x+8,L.wsY+10,skSec.x+8,L.wsY+46);
-  sinkG.addColorStop(0,'#0e2030'); sinkG.addColorStop(1,'#070f18');
-  rr(skSec.x+8,L.wsY+10,skSec.w-16,36,5,sinkG,'#3a6080',1.5);
-  X.save(); X.globalAlpha=0.35; X.strokeStyle='#88aacc'; X.lineWidth=1;
-  X.beginPath(); X.ellipse(skCx,L.wsY+32,10,4,0,0,Math.PI*2); X.stroke(); X.restore();
-  txt('🚰',skCx,tapY-2,'#88aacc',20);
+  _drawSink(skCx, tapY, L.wsY, L.wsH);
 
-  // Shaker
+  // ── Shaker ──
   const jgSec=secs[4], jgCx=jgSec.x+jgSec.w/2;
-  rr(jgSec.x+6,L.wsY+10,jgSec.w-12,36,5,'#180c28','#7050b0',1.5);
-  _drawShaker(jgCx,tapY+2);
-  txt('SHAKE',jgCx,L.wsY+L.wsH-13,'#c8a0ff',7);
+  rr(jgSec.x+6,L.wsY+10,jgSec.w-12,L.wsH-18,8,'#130a22','#5a3888',1.5);
+  _drawShaker(jgCx, tapY+2);
+  txt('SHAKE',jgCx,L.wsY+L.wsH-7,'#c8a0ff',7);
 }
 
 // ─── SHELF TABS — compact centred pills ──────────────────────────────────────

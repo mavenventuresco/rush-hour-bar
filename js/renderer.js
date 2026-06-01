@@ -1,3 +1,7 @@
+import { X, W, H, cv, DPR, lo, seatX } from './canvas.js';
+import { GL, SHELVES } from './drinks.js';
+import { BSTYLES, drawBottle } from './bottles.js';
+
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function rr(x, y, w, h, r, fill, stroke, lw = 1.5) {
   X.beginPath(); X.roundRect(x, y, w, h, r);
@@ -37,7 +41,7 @@ function liquidColor(ings) {
 }
 
 // ─── GLASS SHAPES ────────────────────────────────────────────────────────────
-function drawGlassShape(x, y, type, ings, finished, sc = 1) {
+export function drawGlassShape(x, y, type, ings, finished, sc = 1) {
   X.save(); X.translate(x, y); X.scale(sc, sc);
   X.lineCap = 'round'; X.lineJoin = 'round';
 
@@ -287,7 +291,7 @@ function _drawGarnish(type, ings) {
 
 
 // ─── CHARACTER DRAWING ───────────────────────────────────────────────────────
-function drawPerson(x, y, skin, cloth, hair, face, scale = 1, hairStyle = 'wavy', eyeStyle = 'round') {
+export function drawPerson(x, y, skin, cloth, hair, face, scale = 1, hairStyle = 'wavy', eyeStyle = 'round') {
   X.save(); X.translate(x, y); X.scale(scale, scale);
 
   // Ground shadow
@@ -624,7 +628,7 @@ function _drawShaker(cx, cy) {
 }
 
 // ─── SHARED WORKSTATION GEOMETRY ─────────────────────────────────────────────
-function wsLayout() {
+export function wsLayout() {
   const TAP_W=92, ICE_W=58, MX_W=Math.min(220,Math.max(160,W*0.2));
   const SINK_W=90, JIG_W=78, GAP=5;
   const totalW=TAP_W+ICE_W+MX_W+SINK_W+JIG_W+GAP*4;
@@ -639,7 +643,7 @@ function wsLayout() {
 }
 
 // ─── SHARED SHELF POPUP GEOMETRY ─────────────────────────────────────────────
-function shelfPopupLayout(tab) {
+export function shelfPopupLayout(tab) {
   const items = SHELVES[tab].items;
   const IW=68, IH=66, GAP=8;
   const COLS = Math.min(items.length, 5);
@@ -657,7 +661,7 @@ function shelfPopupLayout(tab) {
 }
 
 // ─── MAIN DRAW ───────────────────────────────────────────────────────────────
-function draw(G, frame, curTab, popupOpen, dragging, particles, floats) {
+export function draw(G, frame, curTab, popupOpen, dragging, particles, floats) {
   const L = lo();
   X.setTransform(1,0,0,1,0,0);
   X.clearRect(0,0,cv.width,cv.height);

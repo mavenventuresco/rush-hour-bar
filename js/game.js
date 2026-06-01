@@ -1,47 +1,20 @@
-// ─── CANVAS SETUP ────────────────────────────────────────────────────────────
-const cv = document.getElementById('c');
-const X  = cv.getContext('2d');
-let W, H, DPR;
+import { initCanvas, resize, lo, seatX, cv, X, W, H, DPR } from './canvas.js';
+import { GL, SHELVES, DRINKS, SKINS, HAIRS, CLOTHS, CNAMES } from './drinks.js';
+import { BSTYLES } from './bottles.js';
+import { initAudio, toggleMute, setGameRunning,
+         bellChime, serveSound, comboSound, failSound, tipSound, clickSfx, shakeSound } from './audio.js';
+import { draw, wsLayout, shelfPopupLayout } from './renderer.js';
 
-function resize() {
-  DPR = window.devicePixelRatio || 1;
-  W   = window.innerWidth;
-  H   = window.innerHeight;
-  cv.width        = Math.round(W * DPR);
-  cv.height       = Math.round(H * DPR);
-  cv.style.width  = W + 'px';
-  cv.style.height = H + 'px';
-  // Scale all drawing commands by DPR so coordinates stay in CSS pixels
-  X.setTransform(DPR, 0, 0, DPR, 0, 0);
-}
-resize();
-window.onresize = resize;
+// Initialise canvas + wire resize
+initCanvas();
+window.addEventListener('resize', resize);
 
-// ─── LAYOUT ──────────────────────────────────────────────────────────────────
-function lo() {
-  const hudH = 40, rackH = 56, barH = 160, wsH = 78, tabH = 36;
-  // Centre the content block in the space below the HUD with equal margins
-  const contentH = rackH + barH + wsH + tabH;
-  const availH   = H - hudH;
-  const topOff   = Math.round(Math.max(0, (availH - contentH) / 2));
-  return {
-    hudH, rackH, barH, wsH, tabH,
-    rackY:    hudH + topOff,
-    barY:     hudH + topOff + rackH,
-    counterY: hudH + topOff + rackH + barH - 18,
-    wsY:      hudH + topOff + rackH + barH,
-    tabY:     hudH + topOff + rackH + barH + wsH,
-  };
-}
-
-// Popup state
-let popupOpen   = false;
+// ─── POPUP STATE ─────────────────────────────────────────────────────────────
+let popupOpen    = false;
 let popupAnchorX = 0;
 
-function seatX(i) {
-  const totalW = Math.min(W - 40, SEATS * 100);
-  const startX = (W - totalW) / 2;
-  return startX + i * (totalW / SEATS) + totalW / SEATS / 2;
+function seatX_local(i) {
+  return seatX(i);  // re-export from canvas module
 }
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -54,8 +27,7 @@ let frame = 0;
 let regions = [];
 let NID = 0;
 
-window._gameRunning = false;
-window._dragging    = null; // renderer reads this
+setGameRunning(false);
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function R(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -80,7 +52,7 @@ function startGame() {
     spawnTimer: 0, spawnInterval: Math.round(120 + Math.random() * 120),
     burstTarget: 3 + Math.floor(Math.random() * 3), burstUsed: 0,
   };
-  window._gameRunning = true;
+  setGameRunning(true);
 
   // Restore saved progress
   try {
@@ -220,6 +192,18 @@ function checkFinished() {
 function buildRegions() {
   regions = [];
   const L = lo();
+
+  // Popup items registered FIRST — they float above the workstation visually
+  // and must win over any workstation regions they spatially overlap with.
+  if (popupOpen) {
+    const p = shelfPopupLayout(curTab);
+    p.items.forEach((item, i) => {
+      const col = i % p.COLS, row = Math.floor(i / p.COLS);
+      const ix = p.px + 16 + col * (p.IW + p.GAP);
+      const iy = p.py + 36 + row * (p.IH + p.GAP);
+      regions.push({ id: 'item_' + item.id, x: ix, y: iy, w: p.IW, h: p.IH, type: 'shelfitem', itemId: item.id });
+    });
+  }
   const rackIW = Math.min(84, (W - 24) / 6);
   const rackStartX = (W - rackIW * 6) / 2;
   for (let i = 0; i < 6; i++) {
@@ -249,16 +233,6 @@ function buildRegions() {
     regions.push({ id: 'tab_' + k, x: tx, y: tabTY, w: PW, h: PH, type: 'shelftab', key: k });
   });
 
-  // Popup item regions — only active when popup is open
-  if (popupOpen) {
-    const p = shelfPopupLayout(curTab);
-    p.items.forEach((item, i) => {
-      const col = i % p.COLS, row = Math.floor(i / p.COLS);
-      const ix = p.px + 16 + col * (p.IW + p.GAP);
-      const iy = p.py + 36 + row * (p.IH + p.GAP);
-      regions.push({ id: 'item_' + item.id, x: ix, y: iy, w: p.IW, h: p.IH, type: 'shelfitem', itemId: item.id });
-    });
-  }
 }
 
 function pos(e) {
@@ -332,18 +306,18 @@ function handleDown(e) {
   // Start drag if drink is finished and click is on mixing station
   if (G.finished && h.type === 'mixstation') {
     dragging = { x: p.x, y: p.y, glass: G.glass, ings: [...G.ings], mixed: G.mixed };
-    window._dragging = dragging;
+    ;
   }
 }
 
 function handleMove(e) {
   if (!G.running) return; e.preventDefault();
   const p = pos(e);
-  if (dragging) { dragging.x = p.x; dragging.y = p.y; window._dragging = dragging; }
+  if (dragging) { dragging.x = p.x; dragging.y = p.y; ; }
 }
 
 function handleUp(e) {
-  if (!G.running || !dragging) { dragging = null; window._dragging = null; return; }
+  if (!G.running || !dragging) { dragging = null; ; return; }
   const p = pos(e);
   const L = lo();
 
@@ -352,10 +326,10 @@ function handleUp(e) {
     const cx = seatX(i), cy = L.barY + L.barH - 62;
     if (Math.abs(p.x - cx) < 50 && p.y > cy - 28 && p.y < cy + 58) {
       const d = c.drink;
-      if (dragging.glass !== d.g) { flash('Wrong glass! Need: ' + GL.find(g => g.id === d.g).l); failSound(); dragging = null; window._dragging = null; return; }
+      if (dragging.glass !== d.g) { flash('Wrong glass! Need: ' + GL.find(g => g.id === d.g).l); failSound(); dragging = null; ; return; }
       const req = d.steps.map(s => s.t === 'ice' ? 'ice' : s.id);
-      if (!req.every(r => dragging.ings.includes(r))) { flash('Missing ingredients!'); failSound(); dragging = null; window._dragging = null; return; }
-      if (d.mix && !dragging.mixed) { flash('Needs mixing/shaking!'); failSound(); dragging = null; window._dragging = null; return; }
+      if (!req.every(r => dragging.ings.includes(r))) { flash('Missing ingredients!'); failSound(); dragging = null; ; return; }
+      if (d.mix && !dragging.mixed) { flash('Needs mixing/shaking!'); failSound(); dragging = null; ; return; }
 
       // Correct serve!
       G.combo++;
@@ -376,7 +350,7 @@ function handleUp(e) {
     failSound(); setLog('Dumped in the sink 🚰', 'b');
   }
 
-  dragging = null; window._dragging = null;
+  dragging = null; ;
 }
 
 cv.addEventListener('mousedown',  handleDown);
@@ -449,3 +423,11 @@ function loop() {
   floats    = floats.filter(f => f.life > 0);
   requestAnimationFrame(loop);
 }
+
+// ─── EXPOSE TO HTML onclick ATTRIBUTES ───────────────────────────────────────
+// ES modules are scoped — inline onclick handlers need window references
+window.startGame  = startGame;
+window.saveGame   = saveGame;
+window.toggleMute = toggleMute;
+window.openMenu   = openMenu;
+window.closeMenu  = closeMenu;

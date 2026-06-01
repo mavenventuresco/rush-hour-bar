@@ -1095,39 +1095,119 @@ function _drawWorkstation(L, G, frame) {
 }
 
 // ─── SHELF TABS — compact centred pills ──────────────────────────────────────
+// Category canvas icons — drawn inside pills instead of emoji
+const _CAT_ICONS = {
+  cognac:   (x,y,c) => { // Cognac bottle silhouette
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.moveTo(-3,8); X.bezierCurveTo(-5,4,-5,-2,-3,-6); X.lineTo(-2,-10); X.lineTo(2,-10); X.lineTo(3,-6); X.bezierCurveTo(5,-2,5,4,3,8); X.closePath();
+    X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.fillStyle=_dk(c,1.5); X.fillRect(-2,-10,4,3);
+    X.restore();
+  },
+  liqueur:  (x,y,c) => { // Round liqueur bottle
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.ellipse(0,4,5,6,0,0,Math.PI*2); X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.beginPath(); X.roundRect(-2,-4,4,6,1); X.fillStyle=c; X.fill(); X.stroke();
+    X.fillStyle=_dk(c,1.5); X.fillRect(-1.5,-7,3,4);
+    X.restore();
+  },
+  rum:      (x,y,c) => { // Dark bottle with curved body
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.moveTo(-4,8); X.bezierCurveTo(-6,2,-4,-4,-3,-7); X.lineTo(3,-7); X.bezierCurveTo(4,-4,6,2,4,8); X.closePath();
+    X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.fillStyle=_dk(c,1.5); X.fillRect(-2,-10,4,4);
+    X.restore();
+  },
+  wine:     (x,y,c) => { // Wine glass
+    X.save(); X.translate(x,y); X.strokeStyle=c; X.lineWidth=1.5; X.lineCap='round';
+    X.beginPath(); X.moveTo(-5,-9); X.bezierCurveTo(-7,-6,-7,1,-3,5); X.lineTo(-1,6); X.lineTo(-1,9); X.lineTo(-3,9); X.lineTo(3,9); X.lineTo(1,9); X.lineTo(1,6); X.bezierCurveTo(3,5,7,1,7,-6); X.bezierCurveTo(7,-9,5,-9,0,-9); X.bezierCurveTo(-3,-9,-5,-9,-5,-9); X.stroke();
+    X.restore();
+  },
+  juice:    (x,y,c) => { // Orange/citrus slice
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.arc(0,2,7,0,Math.PI*2); X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.save(); X.globalAlpha=0.35; X.strokeStyle='#fff'; X.lineWidth=0.8;
+    for(let s=0;s<6;s++){ const a=s*Math.PI/3; X.beginPath(); X.moveTo(0,2); X.lineTo(Math.cos(a)*6,2+Math.sin(a)*6); X.stroke(); }
+    X.restore();
+    X.beginPath(); X.arc(0,2,4,0,Math.PI*2); X.fillStyle=_dk(c,1.2); X.fill();
+    X.restore();
+  },
+  beverage: (x,y,c) => { // Can
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.roundRect(-4,-9,8,16,2); X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.fillStyle=_dk(c,1.4); X.beginPath(); X.roundRect(-4,-9,8,4,2); X.fill();
+    X.save(); X.globalAlpha=0.3; X.fillStyle='#fff'; X.fillRect(-3,-8,2,12); X.restore();
+    X.restore();
+  },
+  vodka:    (x,y,c) => { // Tall spirit bottle
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.moveTo(-3,8); X.lineTo(-4,-2); X.lineTo(-3,-8); X.lineTo(3,-8); X.lineTo(4,-2); X.lineTo(3,8); X.closePath();
+    X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.fillStyle=_dk(c,0.8); X.fillRect(-2,-11,4,4);
+    X.save(); X.globalAlpha=0.3; X.fillStyle='#fff'; X.fillRect(-3,-7,2,13); X.restore();
+    X.restore();
+  },
+  whiskey:  (x,y,c) => { // Squat whiskey bottle
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.moveTo(-5,8); X.lineTo(-6,0); X.lineTo(-4,-6); X.lineTo(-2,-9); X.lineTo(2,-9); X.lineTo(4,-6); X.lineTo(6,0); X.lineTo(5,8); X.closePath();
+    X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.save(); X.globalAlpha=0.25; X.fillStyle='#fff'; X.fillRect(-5,-5,3,12); X.restore();
+    X.restore();
+  },
+  syrup:    (x,y,c) => { // Dropper/sauce bottle
+    X.save(); X.translate(x,y);
+    X.beginPath(); X.ellipse(0,4,5,5,0,0,Math.PI*2); X.fillStyle=c; X.fill(); X.strokeStyle=_dk(c,0.6); X.lineWidth=1; X.stroke();
+    X.fillStyle=c; X.beginPath(); X.roundRect(-2,-4,4,8,1); X.fill(); X.stroke();
+    X.fillStyle=_dk(c,0.7); X.fillRect(-1,-7,2,4);
+    // Drop
+    X.beginPath(); X.arc(0,10,2,0,Math.PI*2); X.fillStyle=c; X.fill();
+    X.restore();
+  },
+};
+
+// Icon accent colours per category
+const _CAT_COLORS = {
+  cognac:'#c8903a', liqueur:'#e06020', rum:'#8B3800', wine:'#9B1030',
+  juice:'#FF8C00',  beverage:'#20aa60', vodka:'#8888cc', whiskey:'#c87830', syrup:'#dd2255',
+};
+
 function _drawShelfTabs(L, curTab, popupOpen) {
   const tabs=Object.keys(SHELVES);
-  const PW=60, PH=34, GAP=5;
+  const PW=64, PH=42, GAP=5;
   const totalW=tabs.length*(PW+GAP)-GAP;
   const startX=Math.round((W-totalW)/2);
   const ty=L.tabY+Math.round((L.tabH-PH)/2);
 
-  // Tray background
-  X.save(); X.globalAlpha=0.45;
-  rr(startX-10,ty-4,totalW+20,PH+8,18,'#0c0820','#1e1240',1);
+  // Tray strip behind all pills
+  X.save(); X.globalAlpha=0.5;
+  rr(startX-10, ty-4, totalW+20, PH+8, 20, '#0a0618','#1a1030', 1);
   X.restore();
 
   tabs.forEach((key,i)=>{
     const tx=startX+i*(PW+GAP);
     const on=curTab===key&&popupOpen;
-    const pg=X.createLinearGradient(tx,ty,tx,ty+PH);
-    if(on){ pg.addColorStop(0,'#3a2068'); pg.addColorStop(1,'#221244'); }
-    else  { pg.addColorStop(0,'#180e34'); pg.addColorStop(1,'#0e0820'); }
-    rr(tx,ty,PW,PH,PH/2,pg,on?'#f5c842':'#3a2860',on?2:1.2);
-    if(on){
-      X.save(); X.globalAlpha=0.18; X.shadowBlur=12; X.shadowColor='#f5c842';
-      rr(tx,ty,PW,PH,PH/2,'#f5c84233',null); X.restore();
-    }
-    // Bigger icon
-    txt(SHELVES[key].ico, tx+PW/2, ty+PH/2, on?'#f5c842':'#8060a0', 18);
-  });
+    const col=_CAT_COLORS[key]||'#8060a0';
 
-  // Label tooltip under active tab
-  if(popupOpen){
-    const idx=tabs.indexOf(curTab);
-    const tx=startX+idx*(PW+GAP);
-    txt(SHELVES[curTab].lbl, tx+PW/2, ty+PH+10, '#f5c842', 9);
-  }
+    // Pill background
+    const pg=X.createLinearGradient(tx,ty,tx,ty+PH);
+    if(on){ pg.addColorStop(0,'#3a2068'); pg.addColorStop(1,'#211040'); }
+    else  { pg.addColorStop(0,'#160c30'); pg.addColorStop(1,'#0c0820'); }
+    rr(tx,ty,PW,PH,10,pg,on?col:'#2a1c50',on?2:1.2);
+
+    // Active glow
+    if(on){
+      X.save(); X.globalAlpha=0.15; X.shadowBlur=10; X.shadowColor=col;
+      rr(tx,ty,PW,PH,10,col+'44',null); X.restore();
+    }
+
+    // Canvas icon (top half of pill)
+    const iconX=tx+PW/2, iconY=ty+14;
+    const iconCol = on ? col : _dk(col, 0.8);
+    if(_CAT_ICONS[key]) _CAT_ICONS[key](iconX, iconY, iconCol);
+
+    // Label always visible (bottom of pill)
+    txt(SHELVES[key].lbl, tx+PW/2, ty+PH-8, on?col:'#6050a0', 7, 'center', '600');
+  });
 }
 
 // ─── SHELF POPUP ─────────────────────────────────────────────────────────────

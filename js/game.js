@@ -240,7 +240,7 @@ function buildRegions() {
   regions.push({ id: 'jig',        x: jgSec.x,  y: L.wsY, w: jgSec.w,  h: L.wsH, type: 'jig'  });
   // Compact centred pill tabs
   const tabs = Object.keys(SHELVES);
-  const PW = 60, PH = 34, GAP = 5;
+  const PW = 64, PH = 42, GAP = 5;
   const totalPW = tabs.length * (PW + GAP) - GAP;
   const tabStartX = Math.round((W - totalPW) / 2);
   const tabTY = L.tabY + Math.round((L.tabH - PH) / 2);
@@ -273,10 +273,20 @@ function handleDown(e) {
   const p = pos(e);
   const L = lo();
 
-  // Close popup on click outside the panel
+  // When popup is open, handle tab clicks first so switching is instant (1 click)
   if (popupOpen) {
+    const tabHit = regions.find(r => r.type === 'shelftab' &&
+      p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h);
+    if (tabHit) {
+      popupAnchorX = tabHit.x + tabHit.w / 2;
+      if (curTab === tabHit.key) { popupOpen = false; }
+      else { curTab = tabHit.key; popupOpen = true; }
+      clickSfx(); return;
+    }
+    // Non-tab click outside popup panel → close
     const pl = shelfPopupLayout(curTab);
-    const inside = p.x >= pl.px && p.x <= pl.px + pl.pw && p.y >= pl.py && p.y <= pl.py + pl.ph;
+    const inside = p.x >= pl.px && p.x <= pl.px + pl.pw &&
+                   p.y >= pl.py && p.y <= pl.py + pl.ph;
     if (!inside) { popupOpen = false; return; }
   }
 

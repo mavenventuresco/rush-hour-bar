@@ -1,5 +1,5 @@
 // Glass types
-const GL = [
+export const GL = [
   { id: 'wine',    l: 'Wine'    },
   { id: 'martini', l: 'Martini' },
   { id: 'shot',    l: 'Shot'    },
@@ -9,7 +9,7 @@ const GL = [
 ];
 
 // Shelf categories & items
-const SHELVES = {
+export const SHELVES = {
   cognac:  { ico: '✨', lbl: 'Cognac',  items: [{ id: 'vs', n: 'VS' }, { id: 'vsop', n: 'VSOP' }, { id: 'xo', n: 'XO' }] },
   liqueur: { ico: '🍊', lbl: 'Liqueur', items: [
     { id: 'baileys', n: 'Baileys' }, { id: 'kahlua', n: 'Kahlúa' }, { id: 'triple_sec', n: 'Triple Sec' },
@@ -41,7 +41,7 @@ const SHELVES = {
 };
 
 // Drink recipes
-const DRINKS = [
+export const DRINKS = [
   { name: 'Draft Lager',      g: 'mug',     steps: [{ t: 'tap', id: 'light', l: 'Light Tap' }], mix: false },
   { name: 'Dark Ale',         g: 'mug',     steps: [{ t: 'tap', id: 'dark',  l: 'Dark Tap'  }], mix: false },
   { name: 'Red Wine',         g: 'wine',    steps: [{ t: 's', id: 'red_wine',  l: 'Red Wine'  }], mix: false },
@@ -71,7 +71,7 @@ const DRINKS = [
 ];
 
 // Character palette
-const SKINS  = ['#f4c089', '#c68642', '#8d5524', '#fdd9b5', '#e8b080', '#a0522d', '#6b3a2a'];
-const HAIRS  = ['#1a0a0a', '#3a1a0a', '#8B4513', '#FFD700', '#8B0000', '#2a1a1a', '#DEB887', '#c0c0c0'];
-const CLOTHS = ['#e84393', '#3498db', '#2ecc71', '#e67e22', '#9b59b6', '#1abc9c', '#e74c3c', '#f39c12', '#34495e', '#16a085'];
-const CNAMES = ['Earl', 'Sal', 'Mick', 'Donna', 'Ray', 'Lupe', 'Hank', 'Tina', 'Bo', 'Wanda', 'Clem', 'Rita', 'Gus', 'Faye', 'Rusty', 'June', 'Dale', 'Bev'];
+export const SKINS  = ['#f4c089', '#c68642', '#8d5524', '#fdd9b5', '#e8b080', '#a0522d', '#6b3a2a'];
+export const HAIRS  = ['#1a0a0a', '#3a1a0a', '#8B4513', '#FFD700', '#8B0000', '#2a1a1a', '#DEB887', '#c0c0c0'];
+export const CLOTHS = ['#e84393', '#3498db', '#2ecc71', '#e67e22', '#9b59b6', '#1abc9c', '#e74c3c', '#f39c12', '#34495e', '#16a085'];
+export const CNAMES = ['Earl', 'Sal', 'Mick', 'Donna', 'Ray', 'Lupe', 'Hank', 'Tina', 'Bo', 'Wanda', 'Clem', 'Rita', 'Gus', 'Faye', 'Rusty', 'June', 'Dale', 'Bev'];

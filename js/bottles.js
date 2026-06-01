@@ -1,5 +1,5 @@
 // ─── BOTTLE / CAN STYLE DATA ─────────────────────────────────────────────────
-const BSTYLES = {
+export const BSTYLES = {
   // Cognac
   vs:          { body: '#8B4513', dark: '#5C2E0E', cap: '#C8A050', label: '#F5DEB3', labelText: '#4A2000', text: 'VS'    },
   vsop:        { body: '#A0522D', dark: '#6B3410', cap: '#D4A960', label: '#FFE4B5', labelText: '#5A2800', text: 'VSOP'  },
@@ -58,7 +58,7 @@ const BSTYLES = {
 };
 
 // ─── DRAWING ─────────────────────────────────────────────────────────────────
-function drawBottle(ctx, x, y, style, label, scale = 1) {
+export function drawBottle(ctx, x, y, style, label, scale = 1) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);

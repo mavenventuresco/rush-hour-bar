@@ -37,7 +37,7 @@ function spawnParticles(x, y, color, n = 8) {
 }
 
 // ─── GAME INIT ───────────────────────────────────────────────────────────────
-function startGame() {
+function _initGame() {
   document.getElementById('overlay').style.display = 'none';
   initAudio();
   G = {
@@ -50,18 +50,27 @@ function startGame() {
     burstTarget: 3 + Math.floor(Math.random() * 3), burstUsed: 0,
   };
   setGameRunning(true);
+  buildMenu(); updHUD();
+  particles = []; floats = [];
+  requestAnimationFrame(loop);
+}
 
-  // Restore saved progress
+function startGame() {
+  _initGame();
+  setLog('New game started! 🍸');
+}
+
+function continueGame() {
+  _initGame();
   try {
     const s = localStorage.getItem('rushbar_save');
-    if (s) { const d = JSON.parse(s); G.money = d.money || 0; G.score = d.score || 0; G.served = d.served || 0; }
-  } catch (e) {}
-
-  buildMenu();
-  updHUD();
-  particles = []; floats = [];
-  setLog('Bar is open! 🍸');
-  requestAnimationFrame(loop);
+    if (s) {
+      const d = JSON.parse(s);
+      G.money = d.money || 0; G.score = d.score || 0; G.served = d.served || 0;
+      updHUD();
+      setLog('Welcome back! Continuing from your save 🍸');
+    }
+  } catch (e) { setLog('Bar is open! 🍸'); }
 }
 
 function saveGame() {
@@ -69,10 +78,16 @@ function saveGame() {
   flash('💾 Game saved!');
 }
 
-// Check for save on load
+// Show Continue button if a save exists
 try {
   const s = localStorage.getItem('rushbar_save');
-  if (s) { const d = JSON.parse(s); document.getElementById('loadinfo').textContent = `Saved: $${d.money || 0} earned, ${d.served || 0} served`; }
+  if (s) {
+    const d = JSON.parse(s);
+    const btn = document.getElementById('loadbtn');
+    const info = document.getElementById('loadinfo');
+    if (btn)  btn.style.display = 'inline-block';
+    if (info) info.textContent  = `$${d.money || 0} earned · ${d.served || 0} drinks served`;
+  }
 } catch (e) {}
 
 // ─── CUSTOMER LOGIC ──────────────────────────────────────────────────────────
@@ -454,7 +469,8 @@ function loop() {
 
 // ─── EXPOSE TO HTML onclick ATTRIBUTES ───────────────────────────────────────
 // ES modules are scoped — inline onclick handlers need window references
-window.startGame  = startGame;
+window.startGame    = startGame;
+window.continueGame = continueGame;
 window.saveGame   = saveGame;
 window.toggleMute = toggleMute;
 window.openMenu   = openMenu;

@@ -92,6 +92,15 @@ canvas {
 }
 .bbtn:hover { transform: scale(1.06); box-shadow: 0 6px 30px #6a2aee88; }
 .bbtn:active { transform: scale(0.97); }
+.bbtn.secondary {
+  background: transparent;
+  border: 2px solid #5a3898;
+  color: #b090e8;
+  font-size: 15px;
+  padding: 10px 36px;
+  box-shadow: none;
+}
+.bbtn.secondary:hover { background: #1a0e30; box-shadow: 0 4px 16px #3a189844; }
 
 /* ─── MODALS ─────────────────────────────────────────────────────────────── */
 .modal {

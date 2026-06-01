@@ -128,7 +128,7 @@ function drawGlassShape(x, y, type, ings, finished, sc = 1) {
 }
 
 // ─── CHARACTER DRAWING ───────────────────────────────────────────────────────
-function drawPerson(x, y, skin, cloth, hair, face, scale = 1) {
+function drawPerson(x, y, skin, cloth, hair, face, scale = 1, hairStyle = 'wavy', eyeStyle = 'round') {
   X.save(); X.translate(x, y); X.scale(scale, scale);
 
   // Ground shadow
@@ -136,153 +136,289 @@ function drawPerson(x, y, skin, cloth, hair, face, scale = 1) {
   X.beginPath(); X.ellipse(0, 46, 16, 4, 0, 0, Math.PI * 2);
   X.fillStyle = '#000'; X.fill(); X.restore();
 
-  // ── Arms (drawn behind body) ──
   const clothDark = _dk(cloth, 0.72);
-  // Left arm
-  X.beginPath();
-  X.moveTo(-14, 16);
-  X.bezierCurveTo(-22, 18, -25, 30, -23, 40);
-  X.lineTo(-18, 40);
-  X.bezierCurveTo(-18, 30, -16, 20, -13, 18);
-  X.closePath();
-  X.fillStyle = clothDark; X.fill();
-  // Right arm
-  X.beginPath();
-  X.moveTo(14, 16);
-  X.bezierCurveTo(22, 18, 25, 30, 23, 40);
-  X.lineTo(18, 40);
-  X.bezierCurveTo(18, 30, 16, 20, 13, 18);
-  X.closePath();
-  X.fillStyle = clothDark; X.fill();
+
+  // ── Arms behind body ──
+  [[-14,-22,18,40],  [14,22,18,40]].forEach(([sx,ex,ey,by], side) => {
+    const dir = side === 0 ? -1 : 1;
+    X.beginPath();
+    X.moveTo(dir*14, 16);
+    X.bezierCurveTo(dir*22, 18, dir*25, 30, dir*23, 40);
+    X.lineTo(dir*18, 40);
+    X.bezierCurveTo(dir*18, 30, dir*16, 20, dir*13, 18);
+    X.closePath();
+    X.fillStyle = clothDark; X.fill();
+  });
 
   // Hands
-  X.beginPath(); X.arc(-21, 40, 5, 0, Math.PI * 2);
-  X.fillStyle = skin; X.fill();
-  X.save(); X.globalAlpha = 0.4; X.strokeStyle = _dk(skin, 0.8); X.lineWidth = 1;
-  X.stroke(); X.restore();
-  X.beginPath(); X.arc(21, 40, 5, 0, Math.PI * 2);
-  X.fillStyle = skin; X.fill();
+  X.beginPath(); X.arc(-21,40,5,0,Math.PI*2); X.fillStyle=skin; X.fill();
+  X.beginPath(); X.arc(21,40,5,0,Math.PI*2);  X.fillStyle=skin; X.fill();
 
   // ── Torso ──
   X.beginPath();
-  X.moveTo(-15, 40); X.lineTo(-16, 14); X.lineTo(16, 14); X.lineTo(15, 40); X.closePath();
-  const bodyG = X.createLinearGradient(-16, 14, 16, 14);
-  bodyG.addColorStop(0,   _dk(cloth, 0.75));
-  bodyG.addColorStop(0.45, cloth);
-  bodyG.addColorStop(1,   _dk(cloth, 0.8));
-  X.fillStyle = bodyG; X.fill();
-
-  // Shirt front panel / collar V
-  X.beginPath();
-  X.moveTo(-5, 14); X.lineTo(0, 24); X.lineTo(5, 14); X.closePath();
-  X.fillStyle = _dk(cloth, 0.65); X.fill();
-
-  // Shirt fold / shadow at waist
-  X.save(); X.globalAlpha = 0.18;
-  X.beginPath(); X.moveTo(-15, 34); X.lineTo(15, 34); X.lineTo(14, 40); X.lineTo(-14, 40); X.closePath();
-  X.fillStyle = '#000'; X.fill(); X.restore();
+  X.moveTo(-15,40); X.lineTo(-16,14); X.lineTo(16,14); X.lineTo(15,40); X.closePath();
+  const bodyG = X.createLinearGradient(-16,14,16,14);
+  bodyG.addColorStop(0, _dk(cloth,0.75)); bodyG.addColorStop(0.45,cloth); bodyG.addColorStop(1,_dk(cloth,0.8));
+  X.fillStyle=bodyG; X.fill();
+  // Collar V
+  X.beginPath(); X.moveTo(-5,14); X.lineTo(0,23); X.lineTo(5,14); X.closePath();
+  X.fillStyle=_dk(cloth,0.62); X.fill();
+  // Button row
+  X.save(); X.fillStyle=_dk(cloth,0.55);
+  [26,30,34].forEach(by=>{ X.beginPath(); X.arc(0,by,1.2,0,Math.PI*2); X.fill(); });
+  X.restore();
+  // Waist shadow
+  X.save(); X.globalAlpha=0.15;
+  X.beginPath(); X.moveTo(-15,34); X.lineTo(15,34); X.lineTo(14,40); X.lineTo(-14,40); X.closePath();
+  X.fillStyle='#000'; X.fill(); X.restore();
 
   // ── Neck ──
-  X.beginPath(); X.moveTo(-5, 14); X.lineTo(-5, 7); X.lineTo(5, 7); X.lineTo(5, 14); X.closePath();
-  X.fillStyle = skin; X.fill();
+  X.beginPath(); X.moveTo(-5,14); X.lineTo(-5,7); X.lineTo(5,7); X.lineTo(5,14); X.closePath();
+  X.fillStyle=skin; X.fill();
 
   // ── Head ──
-  // Head shape
-  X.beginPath();
-  X.ellipse(0, -5, 14, 17, 0, 0, Math.PI * 2);
-  const headG = X.createRadialGradient(-4, -10, 1, 0, -5, 17);
-  headG.addColorStop(0, _dk(skin, 1.18));
-  headG.addColorStop(0.6, skin);
-  headG.addColorStop(1, _dk(skin, 0.86));
-  X.fillStyle = headG; X.fill();
+  X.beginPath(); X.ellipse(0,-5,14,17,0,0,Math.PI*2);
+  const headG = X.createRadialGradient(-4,-10,1,0,-5,17);
+  headG.addColorStop(0,_dk(skin,1.18)); headG.addColorStop(0.6,skin); headG.addColorStop(1,_dk(skin,0.86));
+  X.fillStyle=headG; X.fill();
 
   // Ears
-  X.beginPath(); X.ellipse(-15, -3, 3.5, 5, 0.2, 0, Math.PI * 2);
-  X.fillStyle = _dk(skin, 0.88); X.fill();
-  X.beginPath(); X.ellipse(15, -3, 3.5, 5, -0.2, 0, Math.PI * 2);
-  X.fillStyle = _dk(skin, 0.88); X.fill();
-  // Inner ear detail
-  X.save(); X.globalAlpha = 0.35;
-  X.beginPath(); X.ellipse(-15, -3, 2, 3.5, 0.2, 0, Math.PI * 2);
-  X.fillStyle = _dk(skin, 0.7); X.fill();
+  X.beginPath(); X.ellipse(-15,-3,3.5,5,0.2,0,Math.PI*2); X.fillStyle=_dk(skin,0.88); X.fill();
+  X.beginPath(); X.ellipse(15,-3,3.5,5,-0.2,0,Math.PI*2); X.fillStyle=_dk(skin,0.88); X.fill();
+  X.save(); X.globalAlpha=0.35;
+  X.beginPath(); X.ellipse(-15,-3,2,3.5,0.2,0,Math.PI*2); X.fillStyle=_dk(skin,0.7); X.fill();
   X.restore();
 
-  // ── Hair ──
-  X.beginPath();
-  X.moveTo(-16, -6);
-  X.bezierCurveTo(-18, -16, -14, -28, 0, -28);
-  X.bezierCurveTo(14, -28, 18, -16, 16, -6);
-  X.bezierCurveTo(10, -8, -10, -8, -16, -6);
-  X.closePath();
-  X.fillStyle = hair; X.fill();
-  // Hair highlight
-  X.save(); X.globalAlpha = 0.28;
-  X.beginPath(); X.ellipse(-3, -20, 5, 3, -0.4, 0, Math.PI * 2);
-  X.fillStyle = _dk(hair, 1.8); X.fill(); X.restore();
-  // Sideburn detail
-  X.save(); X.globalAlpha = 0.5;
-  X.beginPath(); X.ellipse(-14, -8, 2.5, 5, 0, 0, Math.PI * 2);
-  X.fillStyle = hair; X.fill();
-  X.beginPath(); X.ellipse(14, -8, 2.5, 5, 0, 0, Math.PI * 2);
-  X.fillStyle = hair; X.fill(); X.restore();
+  // ── Hair styles ──
+  _drawHair(hair, hairStyle);
 
-  // ── Face ──
-  if (face === 'angry') {
-    // Furrowed brows
-    X.save(); X.strokeStyle = _dk(skin, 0.5); X.lineWidth = 2.5; X.lineCap = 'round';
-    X.beginPath(); X.moveTo(-12, -12); X.lineTo(-5, -9); X.stroke();
-    X.beginPath(); X.moveTo(12, -12); X.lineTo(5, -9); X.stroke(); X.restore();
-    // Squinting red eyes
-    X.fillStyle = '#bb1100';
-    X.beginPath(); X.ellipse(-7, -5, 4.5, 2.5, 0, 0, Math.PI * 2); X.fill();
-    X.beginPath(); X.ellipse(7, -5, 4.5, 2.5, 0, 0, Math.PI * 2); X.fill();
-    // Frown
-    X.beginPath(); X.arc(0, 7, 5, Math.PI + 0.25, Math.PI * 2 - 0.25);
-    X.strokeStyle = '#661100'; X.lineWidth = 1.8; X.stroke();
-  } else if (face === 'happy') {
-    // Curved happy eyes
-    X.save(); X.strokeStyle = '#1a1a1a'; X.lineWidth = 2.2; X.lineCap = 'round';
-    X.beginPath(); X.arc(-7, -4, 4, Math.PI + 0.15, Math.PI * 2 - 0.15); X.stroke();
-    X.beginPath(); X.arc(7, -4, 4, Math.PI + 0.15, Math.PI * 2 - 0.15); X.stroke(); X.restore();
-    // Smile path
-    X.beginPath(); X.arc(0, 3, 7, 0.08, Math.PI - 0.08);
-    X.strokeStyle = '#7a3322'; X.lineWidth = 2; X.stroke();
-    // Teeth fill
-    X.save();
-    X.beginPath(); X.arc(0, 3, 7, 0.08, Math.PI - 0.08); X.lineTo(0, 3); X.closePath();
-    X.clip();
-    X.fillStyle = '#fffaf0'; X.fillRect(-7, 3, 14, 7); X.restore();
-    // Rosy cheeks
-    X.save(); X.globalAlpha = 0.28; X.fillStyle = '#ff7777';
-    X.beginPath(); X.ellipse(-11, 1, 4.5, 3, 0, 0, Math.PI * 2); X.fill();
-    X.beginPath(); X.ellipse(11, 1, 4.5, 3, 0, 0, Math.PI * 2); X.fill(); X.restore();
-  } else if (face === 'drinking') {
-    // Closed/tilted eyes while sipping
-    X.save(); X.strokeStyle = '#2a2a2a'; X.lineWidth = 2; X.lineCap = 'round';
-    X.beginPath(); X.moveTo(-11, -6); X.lineTo(-4, -5); X.stroke();
-    X.beginPath(); X.moveTo(4, -5); X.lineTo(11, -6); X.stroke(); X.restore();
-    // Open mouth
-    X.beginPath(); X.ellipse(0, 5, 4.5, 4, 0, 0, Math.PI * 2);
-    X.fillStyle = '#5a1a00'; X.fill();
-    X.save(); X.globalAlpha = 0.6; X.fillStyle = '#cc4422';
-    X.beginPath(); X.ellipse(0, 5, 3, 2.5, 0, 0, Math.PI * 2); X.fill(); X.restore();
-  } else {
-    // Neutral — round whites + dark pupils
-    X.fillStyle = '#f8f8f8';
-    X.beginPath(); X.ellipse(-7, -5, 5, 5.5, 0, 0, Math.PI * 2); X.fill();
-    X.beginPath(); X.ellipse(7, -5, 5, 5.5, 0, 0, Math.PI * 2); X.fill();
-    X.fillStyle = '#1a1a2a';
-    X.beginPath(); X.arc(-7, -4, 3.2, 0, Math.PI * 2); X.fill();
-    X.beginPath(); X.arc(7, -4, 3.2, 0, Math.PI * 2); X.fill();
-    X.save(); X.globalAlpha = 0.75; X.fillStyle = '#ffffff';
-    X.beginPath(); X.arc(-6, -5, 1.4, 0, Math.PI * 2); X.fill();
-    X.beginPath(); X.arc(8, -5, 1.4, 0, Math.PI * 2); X.fill(); X.restore();
-    // Neutral mouth
-    X.beginPath(); X.arc(0, 5, 4, 0.1, Math.PI - 0.1);
-    X.strokeStyle = _dk(skin, 0.65); X.lineWidth = 1.6; X.stroke();
+  // ── Eyes + face ──
+  _drawFace(face, eyeStyle, skin);
+
+  X.restore();
+}
+
+// Draw hair by style
+function _drawHair(hair, style) {
+  const hi = _dk(hair, 1.7); // highlight colour
+
+  if (style === 'short') {
+    // Close crop — thin cap hugging the head
+    X.beginPath();
+    X.moveTo(-15, -4);
+    X.bezierCurveTo(-17, -14, -12, -26, 0, -26);
+    X.bezierCurveTo(12, -26, 17, -14, 15, -4);
+    X.bezierCurveTo(10, -6, -10, -6, -15, -4);
+    X.closePath();
+    X.fillStyle = hair; X.fill();
+    // Tight fade on sides
+    X.save(); X.globalAlpha = 0.25;
+    X.beginPath(); X.ellipse(-13, -6, 3, 6, 0.3, 0, Math.PI*2); X.fillStyle = hair; X.fill();
+    X.beginPath(); X.ellipse(13, -6, 3, 6, -0.3, 0, Math.PI*2); X.fillStyle = hair; X.fill();
+    X.restore();
+
+  } else if (style === 'wavy') {
+    // Medium natural waves
+    X.beginPath();
+    X.moveTo(-16, -6);
+    X.bezierCurveTo(-18, -18, -12, -28, 0, -28);
+    X.bezierCurveTo(12, -28, 18, -18, 16, -6);
+    X.bezierCurveTo(10, -8, -10, -8, -16, -6);
+    X.closePath();
+    X.fillStyle = hair; X.fill();
+    // Wave texture lines
+    X.save(); X.globalAlpha = 0.2; X.strokeStyle = _dk(hair, 0.6); X.lineWidth = 1;
+    X.beginPath(); X.moveTo(-12,-16); X.quadraticCurveTo(-6,-20,0,-17); X.quadraticCurveTo(6,-20,12,-16); X.stroke();
+    X.restore();
+    X.save(); X.globalAlpha = 0.3;
+    X.beginPath(); X.ellipse(-3,-20,5,3,-0.3,0,Math.PI*2); X.fillStyle=hi; X.fill();
+    X.restore();
+
+  } else if (style === 'long') {
+    // Shoulder-length — flows down past the ears
+    X.beginPath();
+    X.moveTo(-16, -6);
+    X.bezierCurveTo(-20, -18, -13, -28, 0, -28);
+    X.bezierCurveTo(13, -28, 20, -18, 16, -6);
+    X.bezierCurveTo(18, 4, 18, 14, 16, 20);   // right side flows down
+    X.lineTo(-16, 20);
+    X.bezierCurveTo(-18, 14, -18, 4, -16, -6);
+    X.closePath();
+    X.fillStyle = hair; X.fill();
+    // Part highlight
+    X.save(); X.globalAlpha=0.28;
+    X.beginPath(); X.moveTo(0,-28); X.lineTo(0,-8);
+    X.strokeStyle=hi; X.lineWidth=2.5; X.stroke(); X.restore();
+    // Volume highlight
+    X.save(); X.globalAlpha=0.22;
+    X.beginPath(); X.ellipse(-4,-18,5,3,-0.4,0,Math.PI*2); X.fillStyle=hi; X.fill(); X.restore();
+
+  } else if (style === 'curly') {
+    // Poofy curls — bumpy outer ring
+    const bumps = 10;
+    X.beginPath();
+    for (let b = 0; b < bumps; b++) {
+      const a = (b / bumps) * Math.PI * 2 - Math.PI / 2;
+      const r1 = 18, r2 = 22;
+      const mid = a + Math.PI / bumps;
+      const cx = Math.cos(a) * r1, cy = -14 + Math.sin(a) * r1 * 0.7;
+      const ox = Math.cos(mid) * r2, oy = -14 + Math.sin(mid) * r2 * 0.7;
+      if (b === 0) X.moveTo(cx, cy);
+      X.quadraticCurveTo(ox, oy, Math.cos(a + Math.PI*2/bumps)*r1, -14+Math.sin(a+Math.PI*2/bumps)*r1*0.7);
+    }
+    X.closePath();
+    X.fillStyle = hair; X.fill();
+    // Curl texture
+    X.save(); X.globalAlpha = 0.22; X.strokeStyle = _dk(hair, 0.6); X.lineWidth = 1.2;
+    for (let b=0; b<5; b++) {
+      const a = (b/5)*Math.PI - Math.PI*0.7;
+      X.beginPath(); X.arc(Math.cos(a)*12, -14+Math.sin(a)*9, 4, 0, Math.PI*1.5); X.stroke();
+    }
+    X.restore();
+
+  } else if (style === 'updo') {
+    // Hair pulled up — tight on sides, bun on top
+    X.beginPath();
+    X.moveTo(-14, -5);
+    X.bezierCurveTo(-16, -12, -10, -22, -4, -24);
+    X.bezierCurveTo(4, -24, 10, -22, 14, -12);
+    X.bezierCurveTo(16, -5, 12, -3, 8, -5);
+    X.bezierCurveTo(4, -7, -4, -7, -14, -5);
+    X.closePath();
+    X.fillStyle = hair; X.fill();
+    // Bun circle on top
+    X.beginPath(); X.arc(0, -26, 9, 0, Math.PI*2);
+    const bunG = X.createRadialGradient(-3,-28,1,0,-26,9);
+    bunG.addColorStop(0, hi); bunG.addColorStop(1, hair);
+    X.fillStyle = bunG; X.fill();
+    // Bun seam
+    X.save(); X.globalAlpha=0.3; X.strokeStyle=_dk(hair,0.6); X.lineWidth=1;
+    X.beginPath(); X.arc(0,-26,7,0.4,Math.PI-0.4); X.stroke(); X.restore();
+
+  } else { // spiky
+    // Sharp spikes radiating upward
+    const spikes = [[-10,-28,-6,-14],[-4,-32,0,-14],[4,-32,2,-14],[10,-28,6,-14]];
+    spikes.forEach(([tx,ty,bx,by]) => {
+      X.beginPath(); X.moveTo(bx,by); X.lineTo(bx-4,by+4); X.lineTo(tx,ty); X.lineTo(bx+4,by+4); X.closePath();
+      X.fillStyle = hair; X.fill();
+    });
+    // Base layer
+    X.beginPath();
+    X.moveTo(-14,-6); X.bezierCurveTo(-16,-14,-10,-20,-14,-6);
+    X.arc(0,-8,14,Math.PI*1.1,Math.PI*1.9); X.closePath();
+    X.fillStyle = hair; X.fill();
   }
 
+  // Sideburns (all styles)
+  X.save(); X.globalAlpha=0.45;
+  X.beginPath(); X.ellipse(-14,-8,2.5,5,0,0,Math.PI*2); X.fillStyle=hair; X.fill();
+  X.beginPath(); X.ellipse(14,-8,2.5,5,0,0,Math.PI*2); X.fillStyle=hair; X.fill();
   X.restore();
+}
+
+// Draw face + eyes by style
+function _drawFace(face, eyeStyle, skin) {
+  // Face expressions override eye style (angry/happy/drinking have fixed eyes)
+  if (face === 'angry') {
+    X.save(); X.strokeStyle=_dk(skin,0.45); X.lineWidth=2.5; X.lineCap='round';
+    X.beginPath(); X.moveTo(-12,-12); X.lineTo(-5,-9); X.stroke();
+    X.beginPath(); X.moveTo(12,-12); X.lineTo(5,-9); X.stroke(); X.restore();
+    X.fillStyle='#bb1100';
+    X.beginPath(); X.ellipse(-7,-5,4.5,2.5,0,0,Math.PI*2); X.fill();
+    X.beginPath(); X.ellipse(7,-5,4.5,2.5,0,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(0,7,5,Math.PI+0.25,Math.PI*2-0.25);
+    X.strokeStyle='#661100'; X.lineWidth=1.8; X.stroke();
+    return;
+  }
+  if (face === 'happy') {
+    X.save(); X.strokeStyle='#1a1a1a'; X.lineWidth=2.2; X.lineCap='round';
+    X.beginPath(); X.arc(-7,-4,4,Math.PI+0.15,Math.PI*2-0.15); X.stroke();
+    X.beginPath(); X.arc(7,-4,4,Math.PI+0.15,Math.PI*2-0.15); X.stroke(); X.restore();
+    X.beginPath(); X.arc(0,3,7,0.08,Math.PI-0.08);
+    X.strokeStyle='#7a3322'; X.lineWidth=2; X.stroke();
+    X.save(); X.beginPath(); X.arc(0,3,7,0.08,Math.PI-0.08); X.lineTo(0,3); X.closePath(); X.clip();
+    X.fillStyle='#fffaf0'; X.fillRect(-7,3,14,7); X.restore();
+    X.save(); X.globalAlpha=0.28; X.fillStyle='#ff7777';
+    X.beginPath(); X.ellipse(-11,1,4.5,3,0,0,Math.PI*2); X.fill();
+    X.beginPath(); X.ellipse(11,1,4.5,3,0,0,Math.PI*2); X.fill(); X.restore();
+    return;
+  }
+  if (face === 'drinking') {
+    X.save(); X.strokeStyle='#2a2a2a'; X.lineWidth=2; X.lineCap='round';
+    X.beginPath(); X.moveTo(-11,-6); X.lineTo(-4,-5); X.stroke();
+    X.beginPath(); X.moveTo(4,-5); X.lineTo(11,-6); X.stroke(); X.restore();
+    X.beginPath(); X.ellipse(0,5,4.5,4,0,0,Math.PI*2); X.fillStyle='#5a1a00'; X.fill();
+    return;
+  }
+
+  // Neutral face — eye shape varies by eyeStyle
+  if (eyeStyle === 'round') {
+    X.fillStyle='#f8f8f8';
+    X.beginPath(); X.ellipse(-7,-5,5,5.5,0,0,Math.PI*2); X.fill();
+    X.beginPath(); X.ellipse(7,-5,5,5.5,0,0,Math.PI*2); X.fill();
+    X.fillStyle='#1a1a2a';
+    X.beginPath(); X.arc(-7,-4,3.2,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(7,-4,3.2,0,Math.PI*2); X.fill();
+    X.save(); X.globalAlpha=0.75; X.fillStyle='#fff';
+    X.beginPath(); X.arc(-6,-5,1.4,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(8,-5,1.4,0,Math.PI*2); X.fill(); X.restore();
+
+  } else if (eyeStyle === 'almond') {
+    // Cat-eye almond shape — pointed outer corner
+    [[- 7, -5, -1], [7, -5, 1]].forEach(([ex, ey, dir]) => {
+      X.beginPath();
+      X.moveTo(ex - 5*dir, ey + 1);
+      X.bezierCurveTo(ex - 3*dir, ey - 4, ex + 2*dir, ey - 4, ex + 5*dir, ey);
+      X.bezierCurveTo(ex + 4*dir, ey + 3, ex - 2*dir, ey + 3, ex - 5*dir, ey + 1);
+      X.closePath(); X.fillStyle='#f0f0f0'; X.fill();
+      X.beginPath(); X.arc(ex, ey, 3, 0, Math.PI*2); X.fillStyle='#1a1a2a'; X.fill();
+      X.save(); X.globalAlpha=0.7; X.fillStyle='#fff';
+      X.beginPath(); X.arc(ex - dir*0.5, ey - 1, 1.2, 0, Math.PI*2); X.fill(); X.restore();
+    });
+
+  } else if (eyeStyle === 'wide') {
+    // Large innocent eyes with thick outline
+    X.fillStyle='#f8f8f8';
+    X.beginPath(); X.ellipse(-7,-5,6,6.5,0,0,Math.PI*2); X.fill();
+    X.beginPath(); X.ellipse(7,-5,6,6.5,0,0,Math.PI*2); X.fill();
+    X.save(); X.strokeStyle='#222'; X.lineWidth=1.5;
+    X.beginPath(); X.ellipse(-7,-5,6,6.5,0,0,Math.PI*2); X.stroke();
+    X.beginPath(); X.ellipse(7,-5,6,6.5,0,0,Math.PI*2); X.stroke(); X.restore();
+    X.fillStyle='#1a1a2a';
+    X.beginPath(); X.arc(-7,-4,3.6,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(7,-4,3.6,0,Math.PI*2); X.fill();
+    // Coloured iris ring
+    X.save(); X.globalAlpha=0.5; X.strokeStyle='#4488ff'; X.lineWidth=1.2;
+    X.beginPath(); X.arc(-7,-4,2.5,0,Math.PI*2); X.stroke();
+    X.beginPath(); X.arc(7,-4,2.5,0,Math.PI*2); X.stroke(); X.restore();
+    X.save(); X.globalAlpha=0.8; X.fillStyle='#fff';
+    X.beginPath(); X.arc(-5.5,-5.5,1.5,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(8.5,-5.5,1.5,0,Math.PI*2); X.fill(); X.restore();
+
+  } else { // hooded
+    // Heavy eyelids drooping over top of eye
+    X.fillStyle='#f0f0f0';
+    X.beginPath(); X.ellipse(-7,-4,5,5,0,0,Math.PI*2); X.fill();
+    X.beginPath(); X.ellipse(7,-4,5,5,0,0,Math.PI*2); X.fill();
+    X.fillStyle='#1a1a2a';
+    X.beginPath(); X.arc(-7,-3,3,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(7,-3,3,0,Math.PI*2); X.fill();
+    // Drooping upper lid covering top ~40% of eye
+    X.fillStyle=skin;
+    X.beginPath(); X.moveTo(-12,-4); X.bezierCurveTo(-10,-10,-4,-10,-2,-4); X.closePath(); X.fill();
+    X.beginPath(); X.moveTo(2,-4);   X.bezierCurveTo(4,-10,10,-10,12,-4);   X.closePath(); X.fill();
+    // Eyelid crease
+    X.save(); X.strokeStyle=_dk(skin,0.7); X.lineWidth=1;
+    X.beginPath(); X.moveTo(-12,-4); X.bezierCurveTo(-8,-8,-4,-8,-2,-4); X.stroke();
+    X.beginPath(); X.moveTo(2,-4);   X.bezierCurveTo(4,-8,8,-8,12,-4);   X.stroke(); X.restore();
+    X.save(); X.globalAlpha=0.65; X.fillStyle='#fff';
+    X.beginPath(); X.arc(-6,-4,1.2,0,Math.PI*2); X.fill();
+    X.beginPath(); X.arc(8,-4,1.2,0,Math.PI*2); X.fill(); X.restore();
+  }
+
+  // Neutral mouth (same for all eye styles)
+  X.beginPath(); X.arc(0,5,4,0.1,Math.PI-0.1);
+  X.strokeStyle=_dk(skin,0.65); X.lineWidth=1.6; X.stroke();
 }
 
 // ─── COCKTAIL SHAKER ─────────────────────────────────────────────────────────
@@ -538,7 +674,7 @@ function _drawBar(L, G, frame, dragging) {
     const face = c.state==='drinking'?'drinking':c.state==='paying'?'happy':c.pat/c.maxP<0.25?'angry':'normal';
     const bob  = c.state==='drinking'?Math.sin(frame*0.15)*2:Math.sin(frame*0.03+c.id)*1.5;
 
-    drawPerson(cx, cy+bob, c.skin, c.cloth, c.hair, face, 0.9);
+    drawPerson(cx, cy+bob, c.skin, c.cloth, c.hair, face, 0.9, c.hairStyle||'wavy', c.eyeStyle||'round');
     txt(c.name, cx, cy+56, '#8070b0', 8);
 
     if (c.state==='drinking') {
@@ -654,14 +790,14 @@ function _drawWorkstation(L, G, frame) {
 // ─── SHELF TABS — compact centred pills ──────────────────────────────────────
 function _drawShelfTabs(L, curTab, popupOpen) {
   const tabs=Object.keys(SHELVES);
-  const PW=56, PH=26, GAP=5;
+  const PW=60, PH=34, GAP=5;
   const totalW=tabs.length*(PW+GAP)-GAP;
   const startX=Math.round((W-totalW)/2);
   const ty=L.tabY+Math.round((L.tabH-PH)/2);
 
-  // Pill strip background
-  X.save(); X.globalAlpha=0.4;
-  rr(startX-8,ty-3,totalW+16,PH+6,14,'#0c0820','#1e1240',1);
+  // Tray background
+  X.save(); X.globalAlpha=0.45;
+  rr(startX-10,ty-4,totalW+20,PH+8,18,'#0c0820','#1e1240',1);
   X.restore();
 
   tabs.forEach((key,i)=>{
@@ -671,16 +807,19 @@ function _drawShelfTabs(L, curTab, popupOpen) {
     if(on){ pg.addColorStop(0,'#3a2068'); pg.addColorStop(1,'#221244'); }
     else  { pg.addColorStop(0,'#180e34'); pg.addColorStop(1,'#0e0820'); }
     rr(tx,ty,PW,PH,PH/2,pg,on?'#f5c842':'#3a2860',on?2:1.2);
-    if(on){ X.save(); X.globalAlpha=0.15; X.shadowBlur=10; X.shadowColor='#f5c842';
-      rr(tx,ty,PW,PH,PH/2,'#f5c84233',null); X.restore(); }
-    txt(SHELVES[key].ico,tx+PW/2,ty+PH/2,on?'#f5c842':'#8060a0',13);
+    if(on){
+      X.save(); X.globalAlpha=0.18; X.shadowBlur=12; X.shadowColor='#f5c842';
+      rr(tx,ty,PW,PH,PH/2,'#f5c84233',null); X.restore();
+    }
+    // Bigger icon
+    txt(SHELVES[key].ico, tx+PW/2, ty+PH/2, on?'#f5c842':'#8060a0', 18);
   });
 
-  // Label under active tab
+  // Label tooltip under active tab
   if(popupOpen){
     const idx=tabs.indexOf(curTab);
     const tx=startX+idx*(PW+GAP);
-    txt(SHELVES[curTab].lbl,tx+PW/2,ty+PH+9,'#f5c842',8);
+    txt(SHELVES[curTab].lbl, tx+PW/2, ty+PH+10, '#f5c842', 9);
   }
 }
 

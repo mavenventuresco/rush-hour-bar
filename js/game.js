@@ -19,7 +19,7 @@ window.onresize = resize;
 
 // ─── LAYOUT ──────────────────────────────────────────────────────────────────
 function lo() {
-  const hudH = 40, rackH = 56, barH = 200, wsH = 80, tabH = 34;
+  const hudH = 40, rackH = 56, barH = 160, wsH = 78, tabH = 36;
   // Centre the content block in the space below the HUD with equal margins
   const contentH = rackH + barH + wsH + tabH;
   const availH   = H - hudH;
@@ -121,6 +121,8 @@ function spawnCustomer() {
   return {
     id: ++NID,
     name: R(CNAMES), skin: R(SKINS), hair: R(HAIRS), cloth: R(CLOTHS),
+    hairStyle: R(['short','wavy','long','curly','updo','spiky']),
+    eyeStyle:  R(['round','almond','wide','hooded']),
     drink, pat, maxP: pat,
     state: 'waiting', drinkTimer: 0, payAmount: 0,
   };
@@ -237,7 +239,7 @@ function buildRegions() {
   regions.push({ id: 'jig',        x: jgSec.x,  y: L.wsY, w: jgSec.w,  h: L.wsH, type: 'jig'  });
   // Compact centred pill tabs
   const tabs = Object.keys(SHELVES);
-  const PW = 56, PH = 26, GAP = 5;
+  const PW = 60, PH = 34, GAP = 5;
   const totalPW = tabs.length * (PW + GAP) - GAP;
   const tabStartX = Math.round((W - totalPW) / 2);
   const tabTY = L.tabY + Math.round((L.tabH - PH) / 2);

@@ -462,9 +462,14 @@ function shelfPopupLayout(tab) {
   const ROWS = Math.ceil(items.length / COLS);
   const pw = COLS*(IW+GAP)-GAP+32;
   const ph = ROWS*(IH+GAP)-GAP+52;
-  const px = Math.round((W-pw)/2);
-  const py = Math.round((H-ph)/2);
-  return { px, py, pw, ph, IW, IH, GAP, COLS, ROWS, items };
+
+  // Anchor above the pill that was clicked; fall back to screen centre
+  const L   = lo();
+  const PAD = 12;
+  const anchorX = (typeof popupAnchorX !== 'undefined') ? popupAnchorX : W / 2;
+  const px  = Math.round(Math.max(PAD, Math.min(W - pw - PAD, anchorX - pw / 2)));
+  const py  = Math.round(L.tabY - ph - 10);   // sit just above tab bar
+  return { px, py, pw, ph, IW, IH, GAP, COLS, ROWS, items, anchorX };
 }
 
 // ─── MAIN DRAW ───────────────────────────────────────────────────────────────
@@ -827,8 +832,8 @@ function _drawShelfTabs(L, curTab, popupOpen) {
 function _drawShelfPopup(curTab, G) {
   const p=shelfPopupLayout(curTab);
 
-  // Full-screen dim
-  X.save(); X.globalAlpha=0.55; X.fillStyle='#000'; X.fillRect(0,0,W,H); X.restore();
+  // Soft local dim — only behind the popup, not full-screen blackout
+  X.save(); X.globalAlpha=0.35; X.fillStyle='#000'; X.fillRect(0,0,W,H); X.restore();
 
   // Panel shadow
   X.save(); X.shadowBlur=40; X.shadowColor='#6030c055';
@@ -836,6 +841,18 @@ function _drawShelfPopup(curTab, G) {
   panG.addColorStop(0,'#1e1248'); panG.addColorStop(1,'#0e0828');
   rr(p.px,p.py,p.pw,p.ph,16,panG,'#5a3898',2.5);
   X.restore();
+
+  // Pointer arrow pointing down toward the pill that opened it
+  const arrowX = Math.max(p.px+18, Math.min(p.px+p.pw-18, p.anchorX));
+  X.beginPath();
+  X.moveTo(arrowX-10, p.py+p.ph);
+  X.lineTo(arrowX+10, p.py+p.ph);
+  X.lineTo(arrowX,    p.py+p.ph+12);
+  X.closePath();
+  const arG=X.createLinearGradient(0,p.py+p.ph,0,p.py+p.ph+12);
+  arG.addColorStop(0,'#1e1248'); arG.addColorStop(1,'#0e0828');
+  X.fillStyle=arG; X.fill();
+  X.strokeStyle='#5a3898'; X.lineWidth=2; X.stroke();
 
   // Top accent bar
   const acG=X.createLinearGradient(p.px,p.py,p.px+p.pw,p.py);

@@ -34,8 +34,9 @@ function lo() {
   };
 }
 
-// Popup open/closed state
-let popupOpen = false;
+// Popup state
+let popupOpen   = false;
+let popupAnchorX = 0;
 
 function seatX(i) {
   const totalW = Math.min(W - 40, SEATS * 100);
@@ -304,6 +305,8 @@ function handleDown(e) {
     G.glass = null; G.ings = []; G.mixed = false; G.finished = false; dragging = null;
     G.combo = 0; updCombo(); failSound(); setLog('Dumped in the sink 🚰', 'b');
   } else if (h.type === 'shelftab') {
+    // Anchor the popup over the centre of the pill that was tapped
+    popupAnchorX = h.x + h.w / 2;
     if (curTab === h.key) { popupOpen = !popupOpen; }
     else { curTab = h.key; popupOpen = true; }
     clickSfx();

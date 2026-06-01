@@ -236,11 +236,15 @@ function buildRegions() {
   regions.push({ id: 'sink',       x: skSec.x,  y: L.wsY, w: skSec.w,  h: L.wsH, type: 'sink' });
   regions.push({ id: 'jig',        x: jgSec.x,  y: L.wsY, w: jgSec.w,  h: L.wsH, type: 'jig'  });
   // Tab pills — same geometry as renderer via pillLayout()
-  const { tabs, startX: tabStartX, PW, PH, GAP } = pillLayout();
-  const tabTY = L.tabY + Math.round((L.tabH - PH) / 2);
+  const { tabs, startX: tabStartX, PW, PH, GAP, rows, perRow } = pillLayout();
+  const trayH = rows === 2 ? PH*2+GAP+6 : PH+6;
+  const tabTY0 = L.tabY + Math.max(2, Math.round((L.tabH - trayH) / 2));
   tabs.forEach((k, i) => {
-    const tx = tabStartX + i * (PW + GAP);
-    regions.push({ id: 'tab_' + k, x: tx, y: tabTY, w: PW, h: PH, type: 'shelftab', key: k });
+    const row = rows === 2 ? Math.floor(i / perRow) : 0;
+    const col = rows === 2 ? i % perRow : i;
+    const tx  = tabStartX + col * (PW + GAP);
+    const ty  = tabTY0 + row * (PH + GAP);
+    regions.push({ id: 'tab_' + k, x: tx, y: ty, w: PW, h: PH, type: 'shelftab', key: k });
   });
 
 }
@@ -276,6 +280,9 @@ function handleDown(e) {
                    p.y >= pl.py && p.y <= pl.py + pl.ph;
     if (!inside) { popupOpen = false; return; }
   }
+
+  // Two-tap mobile serving: if holding a finished drink, tap on a customer to serve
+  if (dragging && _tryServe(p.x, p.y)) return;
 
   // Tap on order bubble → show recipe
   G.stools.forEach((c, i) => {
@@ -329,41 +336,57 @@ function handleMove(e) {
   if (dragging) { dragging.x = p.x; dragging.y = p.y; ; }
 }
 
-function handleUp(e) {
-  if (!G.running || !dragging) { dragging = null; ; return; }
-  const p = pos(e);
+// ── shared serve-check — called from both handleDown (tap) and handleUp (drag)
+function _tryServe(px, py) {
+  if (!dragging) return false;
   const L = lo();
-
+  let served = false;
   G.stools.forEach((c, i) => {
-    if (!c || c.state !== 'ordering') return;
+    if (!c || c.state !== 'ordering' || served) return;
     const cx = seatX(i), cy = L.barY + L.barH - 62;
-    if (Math.abs(p.x - cx) < 60 && p.y > cy - 40 && p.y < cy + 70) {
-      const d = c.drink;
-      if (dragging.glass !== d.g) { flash('Wrong glass! Need: ' + GL.find(g => g.id === d.g).l); failSound(); dragging = null; ; return; }
-      const req = d.steps.map(s => s.t === 'ice' ? 'ice' : s.id);
-      if (!req.every(r => dragging.ings.includes(r))) { flash('Missing ingredients!'); failSound(); dragging = null; ; return; }
-      if (d.mix && !dragging.mixed) { flash('Needs mixing/shaking!'); failSound(); dragging = null; ; return; }
-
-      // Correct serve!
-      G.combo++;
-      updCombo();
-      c.state = 'drinking'; c.drinkTimer = 180;
-      c.savedPct = c.pat / c.maxP; c.comboMult = Math.min(G.combo, 4);
-      G.glass = null; G.ings = []; G.mixed = false; G.finished = false;
-      if (G.combo > 1) comboSound(); else serveSound();
-      setLog('Served ' + c.name + '! 🍸', 'g');
-      updHUD();
+    if (Math.abs(px - cx) > 64 || py < cy - 50 || py > cy + 80) return;
+    const d = c.drink;
+    if (dragging.glass !== d.g) {
+      flash('Wrong glass! Need: ' + GL.find(g => g.id === d.g).l);
+      failSound(); dragging = null; served = true; return;
     }
+    const req = d.steps.map(s => s.t === 'ice' ? 'ice' : s.id);
+    if (!req.every(r => dragging.ings.includes(r))) {
+      flash('Missing ingredients!'); failSound(); dragging = null; served = true; return;
+    }
+    if (d.mix && !dragging.mixed) {
+      flash('Needs mixing/shaking!'); failSound(); dragging = null; served = true; return;
+    }
+    G.combo++; updCombo();
+    c.state = 'drinking'; c.drinkTimer = 180;
+    c.savedPct = c.pat / c.maxP; c.comboMult = Math.min(G.combo, 4);
+    G.glass = null; G.ings = []; G.mixed = false; G.finished = false;
+    dragging = null;
+    if (G.combo > 1) comboSound(); else serveSound();
+    setLog('Served ' + c.name + '! 🍸', 'g'); updHUD();
+    served = true;
   });
+  return served;
+}
+
+function handleUp(e) {
+  if (!G.running || !dragging) { dragging = null; return; }
+  const p  = pos(e);              // release position (changedTouches on mobile)
+  const dp = { x: dragging.x, y: dragging.y }; // glass visual position
+
+  // Accept drop at EITHER the release point or where the glass is shown
+  if (!_tryServe(p.x, p.y)) _tryServe(dp.x, dp.y);
 
   // Drop on sink
-  const sinkR = regions.find(r => r.id === 'sink');
-  if (sinkR && p.x >= sinkR.x && p.x <= sinkR.x + sinkR.w && p.y >= sinkR.y && p.y <= sinkR.y + sinkR.h) {
-    G.glass = null; G.ings = []; G.mixed = false; G.finished = false;
-    failSound(); setLog('Dumped in the sink 🚰', 'b');
+  if (dragging) {
+    const sinkR = regions.find(r => r.id === 'sink');
+    if (sinkR && p.x >= sinkR.x && p.x <= sinkR.x + sinkR.w &&
+        p.y >= sinkR.y && p.y <= sinkR.y + sinkR.h) {
+      G.glass = null; G.ings = []; G.mixed = false; G.finished = false;
+      failSound(); setLog('Dumped in the sink 🚰', 'b');
+    }
   }
-
-  dragging = null; ;
+  dragging = null;
 }
 
 cv.addEventListener('mousedown',  handleDown);

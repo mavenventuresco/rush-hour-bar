@@ -730,16 +730,21 @@ export function wsLayout() {
   ];
 }
 
-// Shared pill geometry — tab bar always aligns with the glass rack
+// Shared pill geometry — aligns with glass rack, stacks to 2 rows on mobile
 export function pillLayout() {
-  const tabs     = Object.keys(SHELVES); // 9 categories
-  const rackIW   = Math.min(96, (W - 16) / 6);
-  const rackW    = rackIW * 6;
-  const startX   = Math.round((W - rackW) / 2);
-  const GAP      = Math.max(2, Math.round(rackW * 0.006));
-  const PW       = Math.round((rackW - GAP * (tabs.length - 1)) / tabs.length);
-  const PH       = Math.min(42, Math.max(28, Math.round(PW * 0.62)));
-  return { tabs, startX, PW, PH, GAP, rackW };
+  const tabs   = Object.keys(SHELVES); // 9 categories
+  const rackIW = Math.min(96, (W - 16) / 6);
+  const rackW  = rackIW * 6;
+  const startX = Math.round((W - rackW) / 2);
+  const GAP    = Math.max(2, Math.round(rackW * 0.006));
+
+  // Single row if pills would be ≥36px wide, else split into 2 rows
+  const pwSingle = Math.round((rackW - GAP * (tabs.length - 1)) / tabs.length);
+  const rows     = pwSingle < 36 ? 2 : 1;
+  const perRow   = rows === 2 ? Math.ceil(tabs.length / 2) : tabs.length; // 5 top, 4 bottom
+  const PW       = Math.round((rackW - GAP * (perRow - 1)) / perRow);
+  const PH       = Math.min(38, Math.max(26, Math.round(PW * 0.58)));
+  return { tabs, startX, PW, PH, GAP, rackW, rows, perRow };
 }
 
 // ─── SHARED SHELF POPUP GEOMETRY ─────────────────────────────────────────────
@@ -1288,41 +1293,45 @@ const _CAT_COLORS = {
 };
 
 function _drawShelfTabs(L, curTab, popupOpen) {
-  const { tabs, startX, PW, PH, GAP, rackW } = pillLayout();
-  const ty = L.tabY + Math.round((L.tabH - PH) / 2);
-  const iconSc = Math.min(1, PW / 64); // scale icons on small screens
+  const { tabs, startX, PW, PH, GAP, rackW, rows, perRow } = pillLayout();
+  const trayH = rows === 2 ? PH*2+GAP+6 : PH+6;
+  const ty0   = L.tabY + Math.max(2, Math.round((L.tabH - trayH) / 2));
+  const iconSc = Math.min(1, PW / 56);
 
-  // Tray strip — exactly as wide as the glass rack
+  // Tray strip
   X.save(); X.globalAlpha=0.5;
-  rr(startX-4, ty-3, rackW+8, PH+6, 16, '#0a0618','#1a1030', 1);
+  rr(startX-4, ty0-3, rackW+8, trayH, 16, '#0a0618','#1a1030', 1);
   X.restore();
 
   tabs.forEach((key,i)=>{
-    const tx=startX+i*(PW+GAP);
-    const on=curTab===key&&popupOpen;
-    const col=_CAT_COLORS[key]||'#8060a0';
+    const row = rows === 2 ? Math.floor(i / perRow) : 0;
+    const col = rows === 2 ? i % perRow : i;
+    const tx  = startX + col*(PW+GAP);
+    const ty  = ty0 + row*(PH+GAP);
+    const on    = curTab===key&&popupOpen;
+    const color = _CAT_COLORS[key]||'#8060a0';
 
     // Pill background
     const pg=X.createLinearGradient(tx,ty,tx,ty+PH);
     if(on){ pg.addColorStop(0,'#3a2068'); pg.addColorStop(1,'#211040'); }
     else  { pg.addColorStop(0,'#160c30'); pg.addColorStop(1,'#0c0820'); }
-    rr(tx,ty,PW,PH,10,pg,on?col:'#2a1c50',on?2:1.2);
+    rr(tx,ty,PW,PH,10,pg,on?color:'#2a1c50',on?2:1.2);
 
     // Active glow
     if(on){
-      X.save(); X.globalAlpha=0.15; X.shadowBlur=10; X.shadowColor=col;
-      rr(tx,ty,PW,PH,10,col+'44',null); X.restore();
+      X.save(); X.globalAlpha=0.15; X.shadowBlur=10; X.shadowColor=color;
+      rr(tx,ty,PW,PH,10,color+'44',null); X.restore();
     }
 
     // Canvas icon — scaled for pill size
     const iconX=tx+PW/2, iconY=ty+PH*0.34;
-    const iconCol = on ? col : _dk(col, 0.8);
+    const iconCol = on ? color : _dk(color, 0.8);
     X.save(); X.translate(iconX, iconY); X.scale(iconSc, iconSc); X.translate(-iconX, -iconY);
     if(_CAT_ICONS[key]) _CAT_ICONS[key](iconX, iconY, iconCol);
     X.restore();
 
     // Label always visible (bottom of pill)
-    txt(SHELVES[key].lbl, tx+PW/2, ty+PH-8, on?col:'#6050a0', 7, 'center', '600');
+    txt(SHELVES[key].lbl, tx+PW/2, ty+PH-8, on?color:'#6050a0', 7, 'center', '600');
   });
 }
 

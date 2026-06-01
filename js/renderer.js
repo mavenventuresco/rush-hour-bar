@@ -1276,7 +1276,7 @@ function _drawShelfTabs(L, curTab, popupOpen) {
   const { tabs, startX, PW, PH, GAP, rackW, rows, perRow } = pillLayout();
   const trayH = rows === 2 ? PH*2+GAP+6 : PH+6;
   const ty0   = L.tabY + Math.max(2, Math.round((L.tabH - trayH) / 2));
-  const iconSc = Math.min(1, PW / 56);
+  const iconSc = Math.min(2, PW / 28); // larger icons, up to 2× the base size
 
   // Tray strip
   X.save(); X.globalAlpha=0.5;
@@ -1304,7 +1304,7 @@ function _drawShelfTabs(L, curTab, popupOpen) {
     }
 
     // Canvas icon — scaled for pill size
-    const iconX=tx+PW/2, iconY=ty+PH*0.34;
+    const iconX=tx+PW/2, iconY=ty+PH*0.38;
     const iconCol = on ? color : _dk(color, 0.8);
     X.save(); X.translate(iconX, iconY); X.scale(iconSc, iconSc); X.translate(-iconX, -iconY);
     if(_CAT_ICONS[key]) _CAT_ICONS[key](iconX, iconY, iconCol);

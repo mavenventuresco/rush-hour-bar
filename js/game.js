@@ -3,7 +3,7 @@ import { GL, SHELVES, DRINKS, SKINS, HAIRS, CLOTHS, CNAMES } from './drinks.js';
 import { BSTYLES } from './bottles.js';
 import { initAudio, toggleMute, setGameRunning,
          bellChime, serveSound, comboSound, failSound, tipSound, clickSfx, shakeSound } from './audio.js';
-import { draw, wsLayout, shelfPopupLayout } from './renderer.js';
+import { draw, wsLayout, shelfPopupLayout, pillLayout } from './renderer.js';
 
 // Initialise canvas + wire resize
 initCanvas();
@@ -235,11 +235,8 @@ function buildRegions() {
   regions.push({ id: 'mixbtn', x: mxCx - 30, y: L.wsY + L.wsH - 22, w: 60, h: 16, type: 'mixbtn' });
   regions.push({ id: 'sink',       x: skSec.x,  y: L.wsY, w: skSec.w,  h: L.wsH, type: 'sink' });
   regions.push({ id: 'jig',        x: jgSec.x,  y: L.wsY, w: jgSec.w,  h: L.wsH, type: 'jig'  });
-  // Compact centred pill tabs
-  const tabs = Object.keys(SHELVES);
-  const PW = 64, PH = 42, GAP = 5;
-  const totalPW = tabs.length * (PW + GAP) - GAP;
-  const tabStartX = Math.round((W - totalPW) / 2);
+  // Tab pills — same geometry as renderer via pillLayout()
+  const { tabs, startX: tabStartX, PW, PH, GAP } = pillLayout();
   const tabTY = L.tabY + Math.round((L.tabH - PH) / 2);
   tabs.forEach((k, i) => {
     const tx = tabStartX + i * (PW + GAP);

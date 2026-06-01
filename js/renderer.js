@@ -643,7 +643,8 @@ export function wsLayout() {
 }
 
 // ─── SHARED SHELF POPUP GEOMETRY ─────────────────────────────────────────────
-export function shelfPopupLayout(tab) {
+// anchorX is passed in from game.js (popupAnchorX) so renderer stays stateless
+export function shelfPopupLayout(tab, anchorX = null) {
   const items = SHELVES[tab].items;
   const IW=68, IH=66, GAP=8;
   const COLS = Math.min(items.length, 5);
@@ -651,17 +652,16 @@ export function shelfPopupLayout(tab) {
   const pw = COLS*(IW+GAP)-GAP+32;
   const ph = ROWS*(IH+GAP)-GAP+52;
 
-  // Anchor above the pill that was clicked; fall back to screen centre
   const L   = lo();
   const PAD = 12;
-  const anchorX = (typeof popupAnchorX !== 'undefined') ? popupAnchorX : W / 2;
-  const px  = Math.round(Math.max(PAD, Math.min(W - pw - PAD, anchorX - pw / 2)));
-  const py  = Math.round(L.tabY - ph - 10);   // sit just above tab bar
-  return { px, py, pw, ph, IW, IH, GAP, COLS, ROWS, items, anchorX };
+  const ax  = anchorX !== null ? anchorX : W / 2;
+  const px  = Math.round(Math.max(PAD, Math.min(W - pw - PAD, ax - pw / 2)));
+  const py  = Math.round(L.tabY - ph - 10);
+  return { px, py, pw, ph, IW, IH, GAP, COLS, ROWS, items, anchorX: ax };
 }
 
 // ─── MAIN DRAW ───────────────────────────────────────────────────────────────
-export function draw(G, frame, curTab, popupOpen, dragging, particles, floats) {
+export function draw(G, frame, curTab, popupOpen, popupAnchorX, dragging, particles, floats) {
   const L = lo();
   X.setTransform(1,0,0,1,0,0);
   X.clearRect(0,0,cv.width,cv.height);
@@ -672,9 +672,9 @@ export function draw(G, frame, curTab, popupOpen, dragging, particles, floats) {
   _drawBackground(L, frame);
   _drawGlassRack(L, G, frame);
   _drawBar(L, G, frame, dragging);
-  _drawWorkstation(L, G, frame);
+  _drawWorkstation(L, G, frame, dragging);
   _drawShelfTabs(L, curTab, popupOpen);
-  if (popupOpen) _drawShelfPopup(curTab, G);
+  if (popupOpen) _drawShelfPopup(curTab, G, popupAnchorX);
   _drawParticles(particles, floats);
 
   if (dragging) {
@@ -1026,7 +1026,7 @@ function _drawSink(cx, tapY, wsY, wsH) {
 }
 
 // ─── WORKSTATION ─────────────────────────────────────────────────────────────
-function _drawWorkstation(L, G, frame) {
+function _drawWorkstation(L, G, frame, dragging) {
   const wsGrad=X.createLinearGradient(0,L.wsY,0,L.wsY+L.wsH);
   wsGrad.addColorStop(0,'#140e2a'); wsGrad.addColorStop(1,'#0e0a1e');
   X.fillStyle=wsGrad; X.fillRect(0,L.wsY,W,L.wsH);
@@ -1082,7 +1082,7 @@ function _drawWorkstation(L, G, frame) {
   rr(mxCx-30,mixBtnY,60,14,5,G.mixed?'#1a4020':'#1e1640',G.mixed?'#4aaa60':'#5a3898',1.5);
   txt(G.mixed?'✅ MIXED':'🔀 MIX',mxCx,mixBtnY+7,G.mixed?'#7dff9a':'#b0a0e0',8);
 
-  if (G.finished&&!window._dragging) {
+  if (G.finished&&!dragging) {
     const pulse=0.65+0.35*Math.sin(frame*0.14);
     X.save(); X.globalAlpha=pulse; txt('✅ DRAG TO SERVE!',mxCx,L.wsY+9,'#7dff9a',10); X.restore();
   }
@@ -1215,8 +1215,8 @@ function _drawShelfTabs(L, curTab, popupOpen) {
 }
 
 // ─── SHELF POPUP ─────────────────────────────────────────────────────────────
-function _drawShelfPopup(curTab, G) {
-  const p=shelfPopupLayout(curTab);
+function _drawShelfPopup(curTab, G, anchorX) {
+  const p=shelfPopupLayout(curTab, anchorX);
 
   // Soft local dim — only behind the popup, not full-screen blackout
   X.save(); X.globalAlpha=0.35; X.fillStyle='#000'; X.fillRect(0,0,W,H); X.restore();

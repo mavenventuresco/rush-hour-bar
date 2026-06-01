@@ -13,9 +13,6 @@ window.addEventListener('resize', resize);
 let popupOpen    = false;
 let popupAnchorX = 0;
 
-function seatX_local(i) {
-  return seatX(i);  // re-export from canvas module
-}
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const SEATS = 8;
@@ -196,7 +193,7 @@ function buildRegions() {
   // Popup items registered FIRST — they float above the workstation visually
   // and must win over any workstation regions they spatially overlap with.
   if (popupOpen) {
-    const p = shelfPopupLayout(curTab);
+    const p = shelfPopupLayout(curTab, popupAnchorX);
     p.items.forEach((item, i) => {
       const col = i % p.COLS, row = Math.floor(i / p.COLS);
       const ix = p.px + 16 + col * (p.IW + p.GAP);
@@ -258,7 +255,7 @@ function handleDown(e) {
       clickSfx(); return;
     }
     // Non-tab click outside popup panel → close
-    const pl = shelfPopupLayout(curTab);
+    const pl = shelfPopupLayout(curTab, popupAnchorX);
     const inside = p.x >= pl.px && p.x <= pl.px + pl.pw &&
                    p.y >= pl.py && p.y <= pl.py + pl.ph;
     if (!inside) { popupOpen = false; return; }
@@ -418,7 +415,7 @@ function loop() {
   frame++;
   buildRegions();
   updateCustomers();
-  draw(G, frame, curTab, popupOpen, dragging, particles, floats);
+  draw(G, frame, curTab, popupOpen, popupAnchorX, dragging, particles, floats);
   particles = particles.filter(p => p.life > 0);
   floats    = floats.filter(f => f.life > 0);
   requestAnimationFrame(loop);

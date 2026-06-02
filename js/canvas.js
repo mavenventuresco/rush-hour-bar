@@ -16,6 +16,21 @@ export function resize() {
   cv.style.height = H + 'px';
   X = cv.getContext('2d');
   X.setTransform(DPR, 0, 0, DPR, 0, 0);
+  _alignUI();
+}
+
+// Pin the HUD and log bar to the same horizontal boundaries as the glass rack
+function _alignUI() {
+  const rackIW = Math.min(96, (W - 16) / 6);
+  const rackW  = Math.round(rackIW * 6);
+  const ox     = Math.round((W - rackW) / 2);
+  const right  = W - ox - rackW;
+  ['hud', 'logbar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.left  = ox   + 'px';
+    el.style.right = right + 'px';
+  });
 }
 
 export function lo() {

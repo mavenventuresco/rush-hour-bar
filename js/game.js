@@ -16,7 +16,6 @@ let popupAnchorX = 0;
 function setPopup(open, anchorX) {
   popupOpen = open;
   if (anchorX !== undefined) popupAnchorX = anchorX;
-  if (G.running) G.paused = open; // freeze timers while browsing ingredients
 }
 
 
@@ -435,8 +434,14 @@ function buildMenu() {
     mg.appendChild(card);
   });
 }
-function openMenu()  { document.getElementById('mmodal').classList.add('open');    }
-function closeMenu() { document.getElementById('mmodal').classList.remove('open'); }
+function openMenu() {
+  document.getElementById('mmodal').classList.add('open');
+  if (G.running) G.paused = true;
+}
+function closeMenu() {
+  document.getElementById('mmodal').classList.remove('open');
+  if (G.running) G.paused = false;
+}
 
 // ─── HUD ─────────────────────────────────────────────────────────────────────
 function updCombo() {

@@ -401,6 +401,31 @@ cv.addEventListener('touchstart', e => { e.preventDefault(); handleDown(e); }, {
 cv.addEventListener('touchmove',  e => { e.preventDefault(); handleMove(e); }, { passive: false });
 cv.addEventListener('touchend',   e => { e.preventDefault(); handleUp(e);   });
 
+// ─── SHARED HELPERS ──────────────────────────────────────────────────────────
+// Build a map of ingredient id → shelf category for icon lookups
+function _buildIngMap() {
+  const map = {};
+  Object.entries(SHELVES).forEach(([key, shelf]) => {
+    shelf.items.forEach(item => { map[item.id] = key; });
+  });
+  return map;
+}
+const _ING_MAP = _buildIngMap();
+
+// Return the category emoji for a step, or a fallback
+function _stepIcon(s) {
+  if (s.t === 'ice') return '🧊';
+  if (s.t === 'tap') return '🍺';
+  const cat = _ING_MAP[s.id];
+  return cat ? SHELVES[cat].ico : '🍾';
+}
+function _stepCatLabel(s) {
+  if (s.t === 'ice') return 'Ice machine';
+  if (s.t === 'tap') return 'Beer tap';
+  const cat = _ING_MAP[s.id];
+  return cat ? SHELVES[cat].lbl : '';
+}
+
 // ─── RECIPE MODAL ────────────────────────────────────────────────────────────
 function openRecipe(c) {
   const d = c.drink, gl = GL.find(g => g.id === d.g);
@@ -414,10 +439,11 @@ function openRecipe(c) {
   document.getElementById('rtitle').textContent = d.name;
   let h = `<div class="rrow"><span class="rlabel">Glass</span><span>${gl.l}</span></div>`;
   d.steps.forEach(s => {
-    const lbl = s.t === 'ice' ? 'Ice' : s.t === 'tap' ? 'Tap' : 'Add';
-    h += `<div class="rrow"><span class="rlabel">${lbl}</span><span>${s.l}</span></div>`;
+    const ico = _stepIcon(s);
+    const cat = _stepCatLabel(s);
+    h += `<div class="rrow"><span class="rlabel" title="${cat}">${ico} ${cat}</span><span>${s.l}</span></div>`;
   });
-  if (d.mix) h += `<div class="rrow"><span class="rlabel shake">Shake</span><span>Mix / Shake</span></div>`;
+  if (d.mix) h += `<div class="rrow"><span class="rlabel shake">🔀 Shake</span><span>Mix / Shake</span></div>`;
   document.getElementById('rsteps').innerHTML = h;
   el.classList.add('open');
 }
@@ -428,8 +454,12 @@ function buildMenu() {
   DRINKS.forEach(d => {
     const gl   = GL.find(g => g.id === d.g);
     const card = document.createElement('div'); card.className = 'mc';
-    const steps = d.steps.map(s => `<span class="tag tl">${s.l}</span>`).join(' ');
-    const mx = d.mix ? `<div class="mr"><span class="tag tg">Shake</span></div>` : '';
+    const steps = d.steps.map(s => {
+      const ico = _stepIcon(s);
+      const cat = _stepCatLabel(s);
+      return `<span class="tag tl" title="${cat}">${ico} ${s.l}</span>`;
+    }).join(' ');
+    const mx = d.mix ? `<div class="mr"><span class="tag tg">🔀 Shake</span></div>` : '';
     card.innerHTML = `<div class="dn">${d.name}</div><div class="mr"><span class="tag tm">${gl.l}</span></div><div class="mr">${steps}</div>${mx}`;
     mg.appendChild(card);
   });

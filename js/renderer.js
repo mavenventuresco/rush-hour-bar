@@ -1349,11 +1349,12 @@ function _drawShelfTabs(L, curTab, popupOpen) {
       X.fillStyle=ag; X.fill(); X.restore();
     }
 
-    // Canvas icon — scaled, centred in upper 60% of pill
+    // Canvas icon — always pass raw hex colour; use globalAlpha to dim inactive
     const iconX=tx+PW/2, iconY=ty+PH*0.40;
-    const iconCol = on ? color : _dk(color, 0.72);
-    X.save(); X.translate(iconX,iconY); X.scale(iconSc,iconSc); X.translate(-iconX,-iconY);
-    if(_CAT_ICONS[key]) _CAT_ICONS[key](iconX,iconY,iconCol);
+    X.save();
+    X.globalAlpha = on ? 1 : 0.52;
+    X.translate(iconX,iconY); X.scale(iconSc,iconSc); X.translate(-iconX,-iconY);
+    if(_CAT_ICONS[key]) _CAT_ICONS[key](iconX,iconY,color); // always full hex
     X.restore();
 
     // Label — brighter on active
